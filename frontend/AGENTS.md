@@ -17,6 +17,7 @@ Vue 3.5 + Vite + TypeScript SPA consuming the Laravel API. Shared contracts (API
 | `src/composables/` | `useCamelCase.ts`; each owns its loading, error, and data |
 | `src/views/` | Route components, lazy-loaded in the router |
 | `src/components/` | `PascalCase.vue` presentational components |
+| `src/utils/` | Pure formatting helpers and display labels |
 
 - Components never call `fetch` directly.
 - No global store; state lives in composables and the URL.
