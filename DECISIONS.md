@@ -284,7 +284,7 @@ Running log of choices made while building Review Queue. The README summarizes t
 
 ### Sorting from the table headers
 - Decision: The Status, Risk and Submitted headers are sort buttons (`aria-sort` on the active column); the sort dropdown is gone. The first click uses the direction a reviewer most likely wants (pending first, riskiest first, newest first) and a second click flips it. The column-to-sort mapping lives in `utils/queueSort.ts`; the sort is still stored in the URL through `useQueueQuery`.
-- Why: Every sort maps to a visible column, and sortable headers are the convention for data tables: the order is shown where the reviewer is looking and is announced to screen readers. Title and submitter stay unsortable, since nobody asked for them.
+- Why: Every sort maps to a visible column, and sortable headers are the convention for data tables: the order is shown where the reviewer is looking and is announced to screen readers. Title and submitter stay unsortable: they do not help a reviewer decide what to look at next.
 - Alternatives considered: Keeping the dropdown, which suits sorts without a matching column or a card layout; offering both, which gives two controls for one piece of state.
 - Would change if: A sort without a matching column was added, or the queue switched to cards on mobile.
 - Category: frontend
@@ -294,4 +294,18 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Why: Without a tie-breaker the database may return equal rows in any order, so the list could reshuffle between requests or pages. Oldest first among ties is fair in a queue: the item that has waited longest comes next.
 - Alternatives considered: `id` alone, which is stable but ignores waiting time; tie-breaking in the sort's own direction, which would put the newest first on "highest risk".
 - Would change if: Reviewers wanted a different order within ties.
+- Category: api
+
+### Sorting adapts to the status tab
+- Decision: The default sort depends on the tab: Pending opens with highest risk first (oldest first among equal scores); other tabs open with newest first. Switching tabs switches to the new tab's default. The Status column is sortable only on All and Reviewed; on single-status tabs its header is plain text, and a status sort in the URL falls back to the tab's default. Risk and Submitted are sortable everywhere. These rules live in `utils/queueSort.ts`.
+- Why: On Pending the reviewer's job is triage, so the riskiest item should be at the top without a click. On a single-status tab every row has the same status, so a status sort would do nothing visible. Keeping the sort when switching tabs would carry, say, "highest risk" into history tabs where newest first is the useful order.
+- Alternatives considered: One global default (newest first), which hides the most useful column on the main tab; disabling rather than removing the status sort button, which leaves a control that never does anything.
+- Would change if: Reviewers mostly worked oldest first for fairness or deadlines, which would change Pending's default to `oldest`.
+- Category: frontend
+
+### API default sort stays `newest`
+- Decision: When `sort` is missing or invalid, the API still falls back to `newest` for every status; the per-tab defaults live in the frontend, which always sends an explicit sort.
+- Why: The tab defaults are a UI policy, and the frontend has to know the active sort anyway to show the header arrows. Duplicating the rule in the API would create two places to keep in sync.
+- Alternatives considered: A status-dependent default in `ItemQuery`.
+- Would change if: Other clients used the API and needed the same triage default.
 - Category: api

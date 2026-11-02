@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { nextSort, sortDirectionOf } from '../queueSort'
+import {
+  defaultSortFor,
+  isSortAvailable,
+  nextSort,
+  sortableColumnsFor,
+  sortDirectionOf,
+} from '../queueSort'
 
 describe('sortDirectionOf', () => {
   it('reports the direction of the active column', () => {
@@ -27,5 +33,28 @@ describe('nextSort', () => {
     expect(nextSort('submitted', 'oldest')).toBe('newest')
     expect(nextSort('risk', 'highest_risk')).toBe('lowest_risk')
     expect(nextSort('status', 'pending_first')).toBe('pending_last')
+  })
+})
+
+describe('sortableColumnsFor', () => {
+  it('offers the status sort only on tabs that mix statuses', () => {
+    expect(sortableColumnsFor('all')).toEqual(['status', 'risk', 'submitted'])
+    expect(sortableColumnsFor('reviewed')).toEqual(['status', 'risk', 'submitted'])
+    expect(sortableColumnsFor('pending')).toEqual(['risk', 'submitted'])
+    expect(sortableColumnsFor('approved')).toEqual(['risk', 'submitted'])
+  })
+
+  it('rejects a status sort on a single-status tab', () => {
+    expect(isSortAvailable('pending_first', 'all')).toBe(true)
+    expect(isSortAvailable('pending_first', 'rejected')).toBe(false)
+    expect(isSortAvailable('oldest', 'rejected')).toBe(true)
+  })
+})
+
+describe('defaultSortFor', () => {
+  it('triages pending items by risk and shows other tabs newest first', () => {
+    expect(defaultSortFor('pending')).toBe('highest_risk')
+    expect(defaultSortFor('reviewed')).toBe('newest')
+    expect(defaultSortFor('all')).toBe('newest')
   })
 })

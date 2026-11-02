@@ -6,10 +6,14 @@ import type { Item, ItemSort } from '@/types/item'
 import { formatDateTime } from '@/utils/format'
 import { nextSort, sortDirectionOf, type SortableColumn } from '@/utils/queueSort'
 
-const { items, sort } = defineProps<{ items: Item[]; sort: ItemSort }>()
+const { items, sort, sortableColumns } = defineProps<{
+  items: Item[]
+  sort: ItemSort
+  sortableColumns: SortableColumn[]
+}>()
 const emit = defineEmits<{ sort: [sort: ItemSort] }>()
 
-const SORTABLE_HEADERS: { column: SortableColumn; label: string }[] = [
+const SORT_HEADERS: { column: SortableColumn; label: string }[] = [
   { column: 'status', label: 'Status' },
   { column: 'risk', label: 'Risk' },
   { column: 'submitted', label: 'Submitted' },
@@ -33,12 +37,13 @@ const route = useRoute()
           <th scope="col">Submitted by</th>
           <!-- aria-sort sits only on the active column, so screen readers announce the current order. -->
           <th
-            v-for="header in SORTABLE_HEADERS"
+            v-for="header in SORT_HEADERS"
             :key="header.column"
             scope="col"
             :aria-sort="sortDirectionOf(header.column, sort)"
           >
             <button
+              v-if="sortableColumns.includes(header.column)"
               type="button"
               class="sort-button"
               :class="{ 'sort-button--active': sortDirectionOf(header.column, sort) }"
@@ -49,6 +54,7 @@ const route = useRoute()
                 {{ SORT_ARROWS[sortDirectionOf(header.column, sort) ?? 'descending'] }}
               </span>
             </button>
+            <template v-else>{{ header.label }}</template>
           </th>
         </tr>
       </thead>

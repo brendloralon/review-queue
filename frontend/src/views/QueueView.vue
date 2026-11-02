@@ -5,9 +5,12 @@ import ItemTable from '@/components/ItemTable.vue'
 import QueueFilters from '@/components/QueueFilters.vue'
 import { useItems } from '@/composables/useItems'
 import { DEFAULT_QUEUE_QUERY, useQueueQuery } from '@/composables/useQueueQuery'
+import { sortableColumnsFor } from '@/utils/queueSort'
 
 const { queueQuery, apiParams, updateQueueQuery } = useQueueQuery()
 const { items, isLoading, errorMessage, reload } = useItems(apiParams)
+
+const sortableColumns = computed(() => sortableColumnsFor(queueQuery.value.status))
 
 const isFirstLoad = computed(() => isLoading.value && items.value.length === 0)
 const hasActiveFilters = computed(
@@ -48,6 +51,7 @@ function clearFilters(): void {
       <ItemTable
         :items="items"
         :sort="queueQuery.sort"
+        :sortable-columns="sortableColumns"
         @sort="updateQueueQuery({ sort: $event })"
       />
     </div>

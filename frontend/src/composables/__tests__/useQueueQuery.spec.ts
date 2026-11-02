@@ -1,9 +1,25 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_QUEUE_QUERY, parseQueueQuery, toApiParams, toRouteQuery } from '../useQueueQuery'
+import {
+  applyQueueChanges,
+  DEFAULT_QUEUE_QUERY,
+  parseQueueQuery,
+  toApiParams,
+  toRouteQuery,
+} from '../useQueueQuery'
 
 describe('parseQueueQuery', () => {
-  it('uses defaults for an empty query', () => {
-    expect(parseQueueQuery({})).toEqual(DEFAULT_QUEUE_QUERY)
+  it('uses defaults for an empty query: pending items in triage order', () => {
+    expect(parseQueueQuery({})).toEqual({ status: 'pending', search: '', sort: 'highest_risk' })
+  })
+
+  it("falls back to the tab's default sort when no sort is given", () => {
+    expect(parseQueueQuery({ status: 'approved' }).sort).toBe('newest')
+  })
+
+  it("replaces a status sort on a single-status tab with that tab's default", () => {
+    expect(parseQueueQuery({ status: 'approved', sort: 'pending_first' }).sort).toBe('newest')
+    expect(parseQueueQuery({ sort: 'pending_last' }).sort).toBe('highest_risk')
+    expect(parseQueueQuery({ status: 'all', sort: 'pending_last' }).sort).toBe('pending_last')
   })
 
   it('reads valid values', () => {
@@ -30,10 +46,40 @@ describe('toRouteQuery', () => {
     expect(toRouteQuery(DEFAULT_QUEUE_QUERY)).toEqual({})
   })
 
+  it("omits the sort when it is the tab's own default", () => {
+    expect(toRouteQuery({ status: 'all', search: '', sort: 'newest' })).toEqual({ status: 'all' })
+    expect(toRouteQuery({ status: 'all', search: '', sort: 'highest_risk' })).toEqual({
+      status: 'all',
+      sort: 'highest_risk',
+    })
+  })
+
   it('round-trips through parseQueueQuery', () => {
     const queueQuery = { status: 'all', search: 'video', sort: 'oldest' } as const
 
     expect(parseQueueQuery(toRouteQuery(queueQuery) as Record<string, string>)).toEqual(queueQuery)
+  })
+})
+
+describe('applyQueueChanges', () => {
+  const sortedByAge = { status: 'all', search: 'video', sort: 'oldest' } as const
+
+  it("switching tabs switches to the new tab's default sort", () => {
+    expect(applyQueueChanges(sortedByAge, { status: 'pending' })).toEqual({
+      status: 'pending',
+      search: 'video',
+      sort: 'highest_risk',
+    })
+  })
+
+  it('keeps the sort when only the search changes', () => {
+    expect(applyQueueChanges(sortedByAge, { search: 'login' }).sort).toBe('oldest')
+  })
+
+  it('keeps an explicitly requested sort', () => {
+    expect(applyQueueChanges(sortedByAge, { status: 'pending', sort: 'oldest' }).sort).toBe(
+      'oldest',
+    )
   })
 })
 
