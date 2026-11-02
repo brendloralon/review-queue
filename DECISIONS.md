@@ -260,3 +260,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: A `@click` handler on `<tr>` calling `router.push`, which needs extra `tabindex`/key handling and loses native link behaviour.
 - Would change if: Rows gained their own controls (e.g. bulk-select checkboxes), which would need to sit above the stretched link.
 - Category: frontend
+
+### Drawer slide animation
+- Decision: The drawer slides in from the right and slides out before navigating back to the queue, using CSS keyframes; closing waits for `getAnimations()` to finish, and both animations are skipped under `prefers-reduced-motion`.
+- Why: Plain CSS needs no dependency, and waiting on the real animations (rather than a hard-coded timeout) keeps the CSS as the only place durations are defined; with reduced motion there is nothing to wait for, so closing stays instant.
+- Alternatives considered: A `<Transition>` around the child `<RouterView>`, which does not work cleanly with a modal `<dialog>` because it leaves the top layer as soon as it is closed on unmount.
+- Would change if: Browser Back should also animate out; today it closes the drawer immediately.
+- Category: frontend

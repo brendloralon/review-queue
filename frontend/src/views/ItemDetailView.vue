@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ReviewForm from '@/components/ReviewForm.vue'
 import RiskBadge from '@/components/RiskBadge.vue'
@@ -34,9 +34,25 @@ onBeforeUnmount(() => {
   }
 })
 
-function close(): void {
+const isClosing = ref(false)
+
+async function close(): Promise<void> {
+  if (isClosing.value) {
+    return
+  }
+
+  isClosing.value = true
+  await nextTick()
+  await waitForAnimations()
   // Keep the queue's filters when returning to it.
-  router.push({ name: 'queue', query: route.query })
+  await router.push({ name: 'queue', query: route.query })
+}
+
+// Navigating away unmounts the dialog at once, so the slide-out has to finish first.
+// With reduced motion there are no animations and this resolves immediately.
+async function waitForAnimations(): Promise<void> {
+  const animations = dialog.value?.getAnimations() ?? []
+  await Promise.allSettled(animations.map((animation) => animation.finished))
 }
 
 function onBackdropClick(event: MouseEvent): void {
@@ -55,6 +71,7 @@ async function onReview(payload: ReviewPayload): Promise<void> {
   <dialog
     ref="dialog"
     class="drawer"
+    :class="{ 'drawer--closing': isClosing }"
     aria-labelledby="item-detail-heading"
     @cancel.prevent="close"
     @click="onBackdropClick"
@@ -153,6 +170,48 @@ async function onReview(payload: ReviewPayload): Promise<void> {
 
 .drawer::backdrop {
   background: rgb(16 24 40 / 0.4);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .drawer[open] {
+    animation: drawer-slide-in 220ms ease-out;
+  }
+
+  .drawer[open]::backdrop {
+    animation: backdrop-fade-in 220ms ease-out;
+  }
+
+  .drawer--closing[open] {
+    animation: drawer-slide-out 180ms ease-in forwards;
+  }
+
+  .drawer--closing[open]::backdrop {
+    animation: backdrop-fade-out 180ms ease-in forwards;
+  }
+}
+
+@keyframes drawer-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes drawer-slide-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes backdrop-fade-out {
+  to {
+    opacity: 0;
+  }
 }
 
 .drawer__panel {
