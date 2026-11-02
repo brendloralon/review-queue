@@ -143,7 +143,7 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Category: api
 
 ### Named sort values
-- Decision: `sort` accepts `newest`, `oldest`, `highest_risk`, `lowest_risk`, mapped to column + direction in one array, with tie-breakers (see "Stable sort tie-breakers").
+- Decision: `sort` accepts `newest`, `oldest`, `highest_risk`, `lowest_risk` (later also `pending_first`, `pending_last`), mapped to column + direction in one array, with tie-breakers (see "Stable sort tie-breakers").
 - Why: Column names never come from the request, and the names read well in the URL. The tie-breaker keeps ordering stable (and pagination-safe later).
 - Alternatives considered: `sort=-created_at` style column sorting.
 - Would change if: Many sortable columns were needed.
@@ -241,7 +241,7 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Category: tooling
 
 ### Frontend test strategy
-- Decision: Unit tests for the API client (409/422/500/network/abort handling) and the queue URL parsing; no component or E2E tests.
+- Decision: Unit tests for the API client (409/422/500/network/abort handling), the queue URL parsing and the per-tab sort rules; no component or E2E tests.
 - Why: These hold the logic most likely to break silently; the views are thin and are covered by a manual end-to-end run-through.
 - Alternatives considered: Component tests with mocked API; Playwright E2E.
 - Would change if: Views gained more logic or the app grew.

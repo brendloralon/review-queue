@@ -84,12 +84,12 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 
 ### What I optimized for
 
-- Making the likely changes local: a new heuristic is one class plus one line, the review flow is one enum method, and a new filter or sort is one whitelist entry.
+- Making the likely changes local: a new heuristic is one class plus one line, the review flow is one enum method, and a new filter or sort is one whitelist entry in the API plus its control in the UI.
 - Clear, explicit code over abstractions, and a small number of meaningful tests.
 - A frontend that stays honest to the server: after a review it shows the server's answer and refetches rather than guessing, and thresholds and flag rules live only in the backend, so tuning them needs no UI change.
 - Triage first: the Pending tab opens with the riskiest items first (the oldest first among equal scores), because deciding what to look at next is the reviewer's main job there. Other tabs show newest first.
 - Shareable, resilient queue views: status, search and sort live in the URL, invalid values fall back to defaults, and the item drawer is its own route (`/items/:id`), so it can be linked to and closed with Back.
-- Accessibility with native elements: labelled inputs, a radio group for the status filter, status shown as text not only colour, and a native modal `<dialog>` for the drawer (focus trap, Esc to close, focus returned to the row).
+- Accessibility with native elements: labelled inputs, a radio group for the status filter, sortable column headers announced with `aria-sort`, status shown as text not only colour, and a native modal `<dialog>` for the drawer (focus trap, Esc to close, focus returned to the row).
 
 ### What I intentionally didn't build
 
