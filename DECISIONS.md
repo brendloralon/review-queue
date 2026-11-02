@@ -191,6 +191,62 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Would change if: The frontend grew complex enough to justify E2E coverage.
 - Category: testing
 
+### Frontend types mirror the API in snake_case
+- Decision: `src/types/item.ts` uses the exact field names from `ItemResource` (`submitter_name`, `risk_score`, …).
+- Why: No mapping layer to write, test or keep in sync; a field means the same thing on both sides.
+- Alternatives considered: Converting to camelCase in the API client.
+- Would change if: The frontend consumed several APIs with different conventions.
+- Category: frontend
+
+### Native `<dialog>` for the item drawer
+- Decision: The drawer is a `<dialog>` opened with `showModal()`, styled as a side panel.
+- Why: The browser provides modal semantics, makes the page behind inert (a real focus trap) and fires `cancel` on Esc — less custom code than a hand-written focus trap. Focus is returned to the opening row on close.
+- Alternatives considered: A `div` with `role="dialog"` and a custom focus trap; a UI library.
+- Would change if: Very old browsers had to be supported.
+- Category: frontend
+
+### Refetch after a review instead of optimistic updates
+- Decision: After any review attempt, the drawer shows the server's response and the queue refetches.
+- Why: The server decides transitions (and may answer 409), so the UI never shows a state the server rejected. The extra request is cheap at this size.
+- Alternatives considered: Optimistic updates with rollback (listed as a stretch goal).
+- Would change if: Latency became noticeable.
+- Category: frontend
+
+### Queue refetches only when the query string changes
+- Decision: `useItems` watches the serialized query (`status=…&sort=…`), aborts superseded requests with `AbortController`, and search input is debounced by 300 ms and written with `router.replace`.
+- Why: Opening or closing the drawer changes the route but not the filters, so it must not refetch; aborting prevents a slow old response from overwriting a newer one; debouncing and replace avoid a request and a history entry per keystroke.
+- Alternatives considered: Deep-watching the params object (refetches on every route change).
+- Would change if: N/A.
+- Category: frontend
+
+### Thresholds and flag rules live only on the server
+- Decision: The risk badge colour follows the stored `suggested_action`, and unknown flags are displayed by humanizing their key.
+- Why: Tuning thresholds or adding a rule needs no frontend change.
+- Alternatives considered: Mirroring the 30/70 thresholds and a full flag list in the frontend.
+- Would change if: The frontend needed rule-specific UI.
+- Category: frontend
+
+### After submitting, open the new item
+- Decision: A successful submission navigates to the new item's drawer over the queue.
+- Why: It shows immediately what moderation computed and confirms the item is in the queue.
+- Alternatives considered: A success message on the form page.
+- Would change if: Submitters and reviewers were separate audiences.
+- Category: assumption
+
+### Committed `.env.development`
+- Decision: `frontend/.env.development` sets `VITE_API_BASE_URL=http://localhost:8000/api/v1`; overrides go in the git-ignored `.env.development.local`.
+- Why: `npm run dev` works from a fresh clone with no copy step; the value is not a secret.
+- Alternatives considered: `.env.example` that must be copied.
+- Would change if: The URL differed per developer by default.
+- Category: tooling
+
+### Frontend test strategy
+- Decision: Unit tests for the API client (409/422/500/network/abort handling) and the queue URL parsing; no component or E2E tests.
+- Why: These hold the logic most likely to break silently; the views are thin and are covered by a manual end-to-end run-through.
+- Alternatives considered: Component tests with mocked API; Playwright E2E.
+- Would change if: Views gained more logic or the app grew.
+- Category: testing
+
 ### AI rules split per folder
 - Decision: Shared contracts in the root `CLAUDE.md`; Laravel rules in `backend/`; Vue rules in `frontend/AGENTS.md` imported by `frontend/CLAUDE.md`.
 - Why: Each stack's rules load only when working in that folder, nothing is duplicated, and `AGENTS.md` keeps the frontend rules readable by other AI tools.

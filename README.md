@@ -21,7 +21,17 @@ Run the tests with `php artisan test`.
 
 ### Frontend (Vue)
 
-_To be completed._
+In a second terminal, with the backend running:
+
+```sh
+cd frontend
+npm install
+npm run dev                                   # http://localhost:5173
+```
+
+The API URL comes from `VITE_API_BASE_URL`, set to `http://localhost:8000/api/v1` in `frontend/.env.development`; override it in `.env.development.local` if the API runs elsewhere.
+
+Checks: `npm run test`, `npm run type-check`, `npm run lint`.
 
 ## 2. Key decisions
 
@@ -75,6 +85,9 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 
 - Making the likely changes local: a new heuristic is one class plus one line, the review flow is one enum method, and a new filter or sort is one whitelist entry.
 - Clear, explicit code over abstractions, and a small number of meaningful tests.
+- A frontend that stays honest to the server: after a review it shows the server's answer and refetches rather than guessing, and thresholds and flag rules live only in the backend, so tuning them needs no UI change.
+- Shareable, resilient queue views: status, search and sort live in the URL, invalid values fall back to defaults, and the item drawer is its own route (`/items/:id`), so it can be linked to and closed with Back.
+- Accessibility with native elements: labelled inputs, a radio group for the status filter, status shown as text not only colour, and a native modal `<dialog>` for the drawer (focus trap, Esc to close, focus returned to the row).
 
 ### What I intentionally didn't build
 
@@ -82,6 +95,7 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 - Full-text search: search is a simple `LIKE` over title, body and submitter, which is fine for a small queue (wildcard characters in the search term are not escaped).
 - Recalculating scores when rules change (a rescore command would be the next step).
 - Pagination: the list returns all matching items for now, wrapped in `data` so pagination metadata can be added without breaking clients.
+- Optimistic updates, a global store (Pinia) or an HTTP library (Axios): composables, the URL and a small `fetch` wrapper cover what this app needs.
 
 ## 5. Testing
 
@@ -91,7 +105,9 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 - **Review flow (unit):** every status transition pair in `ItemStatus`.
 - **API (feature, in-memory SQLite):** submitting (moderation stored, validation, ignored review fields), showing (404), listing (each filter, search, sort, tie-breaker, invalid and unknown params) and reviewing (approve, reject with note, blank note, 409 on double review, 409 on invalid transition, 422, 404, and a simulated race between two reviewers).
 - **Seeder:** sample data triggers every rule, suggested action and status, so the demo stays meaningful as rules change.
+- **Frontend (Vitest):** the API client's error handling (409 and 422 messages, hidden 500 details, network failures, aborted requests) and the queue's URL parsing (defaults, invalid values, round-trip). This is the logic most likely to break silently.
 
 ### What I didn't test and why
 
 - The generic 500 response: it is Laravel's built-in behaviour when `APP_DEBUG=false`.
+- Vue components and end-to-end browser flows: the views are thin wrappers around the tested composables and API client, so I covered them with a manual run-through instead of slower component or Playwright tests.
