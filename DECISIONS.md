@@ -65,6 +65,62 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Would change if: The generated guidance conflicted with project rules more than it helped.
 - Category: tooling
 
+### Single items table; review stored on the item
+- Decision: One `items` table holds content, the stored moderation result (`risk_score`, `flags`, `suggested_action`) and the review (`status`, `review_note`, `reviewed_at`).
+- Why: Reviews are final, so an item has at most one review; a separate table would add a join with no benefit.
+- Alternatives considered: A `reviews` table (one-to-many) for history.
+- Would change if: Re-review, multiple reviewers, or an audit history were required.
+- Category: data-model
+
+### Status stored as a string, restricted by the enum cast
+- Decision: `status` and `suggested_action` are string columns cast to PHP backed enums.
+- Why: SQLite has no enum type, and adding a status later needs no migration — only an enum case.
+- Alternatives considered: A DB enum or check constraint.
+- Would change if: Other systems wrote to the database directly and needed DB-level enforcement.
+- Category: data-model
+
+### Flags stored as a JSON array
+- Decision: Moderation flags are a JSON column (e.g. `["contains_links","shouting"]`).
+- Why: They are displayed, not queried; a pivot table would be overhead.
+- Alternatives considered: A `flags` table with a pivot; a comma-separated string.
+- Would change if: The queue needed to filter by flag (then `whereJsonContains`, or normalize).
+- Category: data-model
+
+### Review fields are not mass-assignable
+- Decision: `status`, `review_note` and `reviewed_at` are excluded from `$fillable`.
+- Why: They may only change through the review action, which enforces allowed transitions; a stray `fill()` cannot bypass the flow.
+- Alternatives considered: Guarding in the controller only.
+- Would change if: N/A.
+- Category: data-model
+
+### Submitter identified by a required name
+- Decision: Items carry a required `submitter_name` (max 80 chars).
+- Why: There is no auth, but reviewers still need to know who submitted an item.
+- Alternatives considered: Anonymous submissions; email address.
+- Would change if: Auth were added — then a `user_id` foreign key.
+- Category: assumption
+
+### Reviews are final
+- Decision: Only `pending → approved | rejected` is allowed; reviewing an already-reviewed item returns 409.
+- Why: The simplest flow that matches "approve/reject"; avoids silent overwrites between reviewers.
+- Alternatives considered: Allowing a reviewer to change their decision.
+- Would change if: Re-review were required — a one-line change in `ItemStatus::allowedTransitions()`.
+- Category: assumption
+
+### Removed Sanctum and the backend web scaffolding
+- Decision: Removed `laravel/sanctum`, its migration and sample route, plus the Blade welcome page, Tailwind/Vite assets and web routes.
+- Why: Auth is out of scope and the backend is API-only; unused scaffolding is dead code to explain and maintain.
+- Alternatives considered: Leaving the installer defaults in place.
+- Would change if: Auth became a requirement (Sanctum reinstalls with `php artisan install:api`).
+- Category: tooling
+
+### Planned API details (decided at plan approval)
+- Decision: `status=reviewed` filters approved + rejected together; reviewer note max 1,000 chars; the item drawer is a nested route `/items/:id`; stored moderation results are not recomputed when rules change.
+- Why: Matches the brief's "pending vs reviewed" wording; bounds input; makes the drawer linkable and closable with Back; keeps scores as a record of what was computed at submission.
+- Alternatives considered: Separate approved/rejected filters only; a modal state outside the URL; recomputing scores on read or via a rescore command.
+- Would change if: Rules changed frequently — then add an `items:rescore` command.
+- Category: api
+
 ### AI rules split per folder
 - Decision: Shared contracts in the root `CLAUDE.md`; Laravel rules in `backend/`; Vue rules in `frontend/AGENTS.md` imported by `frontend/CLAUDE.md`.
 - Why: Each stack's rules load only when working in that folder, nothing is duplicated, and `AGENTS.md` keeps the frontend rules readable by other AI tools.
