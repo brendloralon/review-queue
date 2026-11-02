@@ -6,6 +6,10 @@ import { RouterLink, RouterView } from 'vue-router'
   <header class="app-header">
     <div class="app-header__inner">
       <RouterLink :to="{ name: 'queue' }" class="brand">Review Queue</RouterLink>
+      <nav aria-label="Main">
+        <RouterLink :to="{ name: 'queue' }">Queue</RouterLink>
+        <RouterLink :to="{ name: 'submit' }">Submit an item</RouterLink>
+      </nav>
     </div>
   </header>
   <main class="app-main">
@@ -37,6 +41,20 @@ import { RouterLink, RouterView } from 'vue-router'
   font-weight: 700;
   color: var(--color-text);
   text-decoration: none;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+}
+
+nav a {
+  text-decoration: none;
+}
+
+nav a.router-link-exact-active {
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 .app-main {

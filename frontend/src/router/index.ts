@@ -18,6 +18,11 @@ const router = createRouter({
       ],
     },
     {
+      path: '/submit',
+      name: 'submit',
+      component: () => import('@/views/SubmitItemView.vue'),
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: { name: 'queue' },
     },
