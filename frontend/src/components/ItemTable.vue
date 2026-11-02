@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import StatusBadge from './StatusBadge.vue'
 import RiskBadge from './RiskBadge.vue'
@@ -6,12 +7,27 @@ import type { Item, ItemSort } from '@/types/item'
 import { formatDateTime } from '@/utils/format'
 import { nextSort, sortDirectionOf, type SortableColumn } from '@/utils/queueSort'
 
-const { items, sort, sortableColumns } = defineProps<{
+const {
+  items,
+  sort,
+  sortableColumns,
+  selectable = false,
+  selectedIds = [],
+} = defineProps<{
   items: Item[]
   sort: ItemSort
   sortableColumns: SortableColumn[]
+  selectable?: boolean
+  selectedIds?: number[]
 }>()
-const emit = defineEmits<{ sort: [sort: ItemSort] }>()
+const emit = defineEmits<{ sort: [sort: ItemSort]; toggle: [id: number]; toggleAll: [] }>()
+
+const allSelected = computed(() => items.length > 0 && selectedIds.length === items.length)
+const someSelected = computed(() => selectedIds.length > 0 && !allSelected.value)
+
+function isSelected(item: Item): boolean {
+  return selectedIds.includes(item.id)
+}
 
 const SORT_HEADERS: { column: SortableColumn; label: string }[] = [
   { column: 'status', label: 'Status' },
@@ -33,6 +49,18 @@ const route = useRoute()
       </caption>
       <thead>
         <tr>
+          <th v-if="selectable" scope="col" class="select-cell">
+            <label class="select-target">
+              <input
+                type="checkbox"
+                :checked="allSelected"
+                :indeterminate="someSelected"
+                :disabled="items.length === 0"
+                @change="emit('toggleAll')"
+              />
+              <span class="visually-hidden">Select all items</span>
+            </label>
+          </th>
           <th scope="col">Title</th>
           <th scope="col">Submitted by</th>
           <!-- aria-sort sits only on the active column, so screen readers announce the current order. -->
@@ -59,7 +87,22 @@ const route = useRoute()
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in items" :key="item.id" class="item-row">
+        <tr
+          v-for="item in items"
+          :key="item.id"
+          class="item-row"
+          :class="{ 'item-row--selected': selectable && isSelected(item) }"
+        >
+          <td v-if="selectable" class="select-cell">
+            <label class="select-target">
+              <input
+                type="checkbox"
+                :checked="isSelected(item)"
+                @change="emit('toggle', item.id)"
+              />
+              <span class="visually-hidden">Select {{ item.title }}</span>
+            </label>
+          </td>
           <td class="title-cell">
             <RouterLink
               :to="{ name: 'item', params: { id: item.id }, query: route.query }"
@@ -148,6 +191,36 @@ tbody tr:last-child td {
 
 .item-row:hover {
   background: var(--color-highlight);
+}
+
+.item-row--selected {
+  background: var(--color-highlight);
+}
+
+/*
+ * The checkbox label fills its cell and sits above the stretched row link, so clicking near
+ * the checkbox selects the row instead of opening the drawer.
+ */
+.select-cell {
+  width: 1%;
+  padding: 0;
+}
+
+.select-target {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0.5rem 0.75rem 1rem;
+  cursor: pointer;
+}
+
+.select-target input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--color-accent);
 }
 
 .row-link {

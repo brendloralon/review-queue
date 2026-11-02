@@ -330,3 +330,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: All-or-nothing in a transaction returning 409; 207 Multi-Status, which few clients handle well; a single `UPDATE ... WHERE status = 'pending'`, which would skip the domain method and its messages.
 - Would change if: Batches had to be atomic (e.g. a later step depended on all items moving together).
 - Category: api
+
+### Bulk review UI on the Pending tab only
+- Decision: Row checkboxes, a select-all checkbox (with a mixed state) and a bulk bar (count, optional shared note, Approve selected, Reject selected, Clear) appear only on the Pending tab. Selection is held by `useItemSelection` and keeps only ids that are visible, so changing the search or a refetch drops hidden items. After a batch the queue refetches, the selection clears, and a summary above the list says what was decided and lists any item that could not be reviewed with the server's message.
+- Why: Every row on the Pending tab can be reviewed, so there are no disabled checkboxes to explain, and triage is where bulk actions help. Dropping invisible ids means a bulk action never touches items the reviewer cannot see. The summary sits outside the list states so it stays visible when a batch empties the queue. Each checkbox's label fills its cell and sits above the stretched row link, so clicking near it selects instead of opening the drawer.
+- Alternatives considered: Checkboxes on every tab, disabled for reviewed items; keeping hidden items selected across searches; a confirmation dialog before bulk reject (left out to keep the flow short: the reviewer ticks each item explicitly and sees the result immediately).
+- Would change if: Reviewers needed to select across pages (once pagination exists), or asked for a confirmation step.
+- Category: frontend
