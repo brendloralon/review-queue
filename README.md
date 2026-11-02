@@ -66,7 +66,7 @@ All endpoints are under `/api/v1` and return Laravel API Resources, so the respo
 - **Errors:** 422 for invalid input (Laravel's default shape), 404 for unknown items, 409 with a clear message when the transition is not allowed (e.g. the item is already reviewed), and a generic 500 when `APP_DEBUG=false`.
 - **The review request accepts any known status** and the enum decides whether the move is allowed. The flow lives in one place, and "malformed" (422) stays distinct from "wrong state" (409).
 - **Concurrent reviews:** the update only applies if the status is still the one that was loaded, so a second reviewer gets a 409 instead of silently overwriting the first review.
-- **List parameters are a whitelist** (`ItemQuery`). Unknown or invalid values fall back to defaults rather than returning 422, so an old or hand-edited queue URL still works. Sorting always adds `id` as a tie-breaker for a stable order.
+- **List parameters are a whitelist** (`ItemQuery`). Unknown or invalid values fall back to defaults rather than returning 422, so an old or hand-edited queue URL still works. Every sort has tie-breakers for a stable order: equal risk or status lists the oldest submission first (it has waited longest), then `id`.
 
 ### Persistence choice
 

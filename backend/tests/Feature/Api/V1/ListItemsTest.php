@@ -97,13 +97,14 @@ class ListItemsTest extends TestCase
         $this->assertListedIds('?sort=pending_last', [$rejected->id, $approved->id, $pending->id]);
     }
 
-    public function test_items_with_the_same_status_are_ordered_by_id(): void
+    public function test_equal_risk_or_status_lists_the_oldest_submission_first(): void
     {
-        $first = Item::factory()->create();
-        $second = Item::factory()->create();
+        $newer = Item::factory()->create(['risk_score' => 40, 'created_at' => now()]);
+        $older = Item::factory()->create(['risk_score' => 40, 'created_at' => now()->subHour()]);
 
-        $this->assertListedIds('?sort=pending_first', [$first->id, $second->id]);
-        $this->assertListedIds('?sort=pending_last', [$second->id, $first->id]);
+        foreach (['highest_risk', 'lowest_risk', 'pending_first', 'pending_last'] as $sort) {
+            $this->assertListedIds("?sort={$sort}", [$older->id, $newer->id]);
+        }
     }
 
     public function test_an_invalid_sort_falls_back_to_newest(): void
@@ -114,7 +115,7 @@ class ListItemsTest extends TestCase
         $this->assertListedIds('?sort=title;drop table items', [$newer->id, $older->id]);
     }
 
-    public function test_equal_sort_values_are_ordered_by_id(): void
+    public function test_equal_sort_values_and_timestamps_are_ordered_by_id(): void
     {
         $sameTime = now();
         $first = Item::factory()->create(['risk_score' => 40, 'created_at' => $sameTime]);
@@ -122,7 +123,8 @@ class ListItemsTest extends TestCase
 
         $this->assertListedIds('?sort=newest', [$second->id, $first->id]);
         $this->assertListedIds('?sort=oldest', [$first->id, $second->id]);
-        $this->assertListedIds('?sort=highest_risk', [$second->id, $first->id]);
+        $this->assertListedIds('?sort=highest_risk', [$first->id, $second->id]);
+        $this->assertListedIds('?sort=pending_last', [$first->id, $second->id]);
     }
 
     public function test_unknown_params_are_ignored(): void

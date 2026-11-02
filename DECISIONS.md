@@ -143,7 +143,7 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Category: api
 
 ### Named sort values
-- Decision: `sort` accepts `newest`, `oldest`, `highest_risk`, `lowest_risk`, mapped to column + direction in one array, with `id` as a tie-breaker.
+- Decision: `sort` accepts `newest`, `oldest`, `highest_risk`, `lowest_risk`, mapped to column + direction in one array, with tie-breakers (see "Stable sort tie-breakers").
 - Why: Column names never come from the request, and the names read well in the URL. The tie-breaker keeps ordering stable (and pagination-safe later).
 - Alternatives considered: `sort=-created_at` style column sorting.
 - Would change if: Many sortable columns were needed.
@@ -276,7 +276,7 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Category: frontend
 
 ### Status sort follows the workflow
-- Decision: Added `pending_first` and `pending_last` sorts that order by workflow position (pending, approved, rejected) from `ItemStatus::workflowPosition()`, applied with a SQL `CASE`; `id` stays the tie-breaker in the same direction.
+- Decision: Added `pending_first` and `pending_last` sorts that order by workflow position (pending, approved, rejected) from `ItemStatus::workflowPosition()`, applied with a SQL `CASE`, followed by the standard tie-breakers.
 - Why: Status is stored as a string, so a plain `ORDER BY status` would be alphabetical (approved, pending, rejected), which means nothing to a reviewer. Keeping the order in the enum means a new status must be placed explicitly.
 - Alternatives considered: Alphabetical order; a numeric status column, which would change the data model for one sort.
 - Would change if: More statuses made the CASE expression costly on large tables.
@@ -288,3 +288,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: Keeping the dropdown, which suits sorts without a matching column or a card layout; offering both, which gives two controls for one piece of state.
 - Would change if: A sort without a matching column was added, or the queue switched to cards on mobile.
 - Category: frontend
+
+### Stable sort tie-breakers
+- Decision: Every sort is an explicit list of order columns. Risk and status sorts break ties by `created_at` ascending, then `id`; date sorts break ties by `id` in the same direction.
+- Why: Without a tie-breaker the database may return equal rows in any order, so the list could reshuffle between requests or pages. Oldest first among ties is fair in a queue: the item that has waited longest comes next.
+- Alternatives considered: `id` alone, which is stable but ignores waiting time; tie-breaking in the sort's own direction, which would put the newest first on "highest risk".
+- Would change if: Reviewers wanted a different order within ties.
+- Category: api

@@ -22,16 +22,17 @@ final class ItemQuery
     public const int MAX_SEARCH_LENGTH = 100;
 
     /**
-     * Sort name => [column, direction]. `id` is appended in the same direction as
-     * a tie-breaker so items with equal values keep a stable order.
+     * Sort name => ordered list of [column, direction]. Every sort ends with tie-breakers so
+     * the order is stable across requests (and pages, later). Within equal risk or status the
+     * oldest submission comes first, because it has waited longest; `id` settles equal timestamps.
      */
     private const array SORTS = [
-        'newest' => ['created_at', 'desc'],
-        'oldest' => ['created_at', 'asc'],
-        'highest_risk' => ['risk_score', 'desc'],
-        'lowest_risk' => ['risk_score', 'asc'],
-        'pending_first' => ['status', 'asc'],
-        'pending_last' => ['status', 'desc'],
+        'newest' => [['created_at', 'desc'], ['id', 'desc']],
+        'oldest' => [['created_at', 'asc'], ['id', 'asc']],
+        'highest_risk' => [['risk_score', 'desc'], ['created_at', 'asc'], ['id', 'asc']],
+        'lowest_risk' => [['risk_score', 'asc'], ['created_at', 'asc'], ['id', 'asc']],
+        'pending_first' => [['status', 'asc'], ['created_at', 'asc'], ['id', 'asc']],
+        'pending_last' => [['status', 'desc'], ['created_at', 'asc'], ['id', 'asc']],
     ];
 
     /**
@@ -93,15 +94,14 @@ final class ItemQuery
     private function sort(Builder $query, mixed $sort): void
     {
         $sortName = is_string($sort) && array_key_exists($sort, self::SORTS) ? $sort : self::DEFAULT_SORT;
-        [$column, $direction] = self::SORTS[$sortName];
 
-        if ($column === 'status') {
-            $this->orderByWorkflowPosition($query, $direction);
-        } else {
-            $query->orderBy($column, $direction);
+        foreach (self::SORTS[$sortName] as [$column, $direction]) {
+            if ($column === 'status') {
+                $this->orderByWorkflowPosition($query, $direction);
+            } else {
+                $query->orderBy($column, $direction);
+            }
         }
-
-        $query->orderBy('id', $direction);
     }
 
     /**

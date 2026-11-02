@@ -43,7 +43,7 @@ Development shell is Windows PowerShell 5.1: chain commands with `;`, not `&&`.
 - All routes under `/api/v1`, JSON only.
 - State changes use action endpoints (`POST /api/v1/items/{id}/review`), not generic PATCH.
 - Unknown query params are ignored; invalid filter or sort values fall back to defaults.
-- List responses wrap results in `data` (Laravel resource collection), so pagination `links`/`meta` can be added without breaking clients. Every sort adds `id` as a tie-breaker.
+- List responses wrap results in `data` (Laravel resource collection), so pagination `links`/`meta` can be added without breaking clients. Every sort ends with tie-breakers (`created_at`, then `id`) so the order is stable.
 - Errors:
 
 | Situation | Status |
