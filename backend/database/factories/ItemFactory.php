@@ -29,4 +29,22 @@ class ItemFactory extends Factory
             'suggested_action' => SuggestedAction::Approve,
         ];
     }
+
+    public function approved(): static
+    {
+        return $this->reviewedAs(ItemStatus::Approved);
+    }
+
+    public function rejected(): static
+    {
+        return $this->reviewedAs(ItemStatus::Rejected);
+    }
+
+    private function reviewedAs(ItemStatus $status): static
+    {
+        return $this->state([
+            'status' => $status,
+            'reviewed_at' => now(),
+        ]);
+    }
 }

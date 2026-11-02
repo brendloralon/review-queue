@@ -33,4 +33,9 @@ class ItemStatusTest extends TestCase
     {
         $this->assertSame($allowed, $from->canTransitionTo($to));
     }
+
+    public function test_approved_and_rejected_count_as_reviewed(): void
+    {
+        $this->assertSame([ItemStatus::Approved, ItemStatus::Rejected], ItemStatus::reviewedStatuses());
+    }
 }

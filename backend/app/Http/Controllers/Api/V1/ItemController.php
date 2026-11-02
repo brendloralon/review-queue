@@ -9,11 +9,21 @@ use App\Http\Requests\V1\StoreItemRequest;
 use App\Http\Resources\V1\ItemResource;
 use App\Models\Item;
 use App\Moderation\ModerationService;
+use App\Queries\ItemQuery;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Symfony\Component\HttpFoundation\Response;
 
 class ItemController extends Controller
 {
+    public function index(Request $request, ItemQuery $itemQuery): AnonymousResourceCollection
+    {
+        $items = $itemQuery->apply(Item::query(), $request->query())->get();
+
+        return ItemResource::collection($items);
+    }
+
     public function show(Item $item): ItemResource
     {
         return ItemResource::make($item);

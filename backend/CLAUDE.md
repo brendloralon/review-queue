@@ -16,7 +16,7 @@ Project rules for the Laravel API. Shared contracts (API shape, error codes, one
 
 - Routes: one `Route::prefix('v1')` group in `routes/api.php`; controllers in `App\Http\Controllers\Api\V1`.
 - Controllers stay thin: Form Request validates → model method or service acts → API Resource responds.
-- Read input only through `$request->validated()`.
+- Read request bodies only through `$request->validated()`. List query parameters go through the `ItemQuery` whitelist instead, so invalid values fall back to defaults rather than returning 422.
 - Models declare casts in the `casts()` method and use `$fillable`.
 - Domain errors (invalid transition) are exceptions rendered as 409 in `bootstrap/app.php` `withExceptions()`, not caught in controllers.
 - Configure the app in `bootstrap/app.php` and `config/`; don't add a Kernel or RouteServiceProvider.
@@ -136,6 +136,16 @@ Before relying on a package's API, confirm its installed version:
 # Deployment
 
 - Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
+
+=== tests rules ===
+
+# Test Enforcement
+
+- Add or update tests for behavior and logic changes when a test provides meaningful regression coverage.
+- Pure copy, styling, and layout-only changes do not require new or updated tests.
+- When test coverage applies, run the affected tests and ensure they pass.
+- Test the changed behavior and its important failure modes, but do not add tests beyond them.
+- Read the `testing-best-practices` skill before writing tests.
 
 === laravel/core rules ===
 

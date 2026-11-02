@@ -16,6 +16,26 @@ enum ItemStatus: string
     }
 
     /**
+     * Exhaustive match on purpose: adding a status forces a decision on whether
+     * it counts as reviewed (used by the queue's "reviewed" filter).
+     */
+    public function isReviewed(): bool
+    {
+        return match ($this) {
+            self::Pending => false,
+            self::Approved, self::Rejected => true,
+        };
+    }
+
+    /**
+     * @return list<self>
+     */
+    public static function reviewedStatuses(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $status): bool => $status->isReviewed()));
+    }
+
+    /**
      * The whole review flow lives here: reviewed items are final.
      *
      * @return list<self>

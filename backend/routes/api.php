@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\ItemController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
+    Route::get('items', [ItemController::class, 'index']);
     Route::post('items', [ItemController::class, 'store']);
     Route::get('items/{item}', [ItemController::class, 'show']);
 });
