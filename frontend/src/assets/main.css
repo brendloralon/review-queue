@@ -1,20 +1,30 @@
 :root {
-  --color-background: #f6f7f9;
+  --color-background: #fbf8ef;
   --color-surface: #ffffff;
-  --color-text: #1d2330;
-  --color-text-muted: #5b6475;
-  --color-border: #dde1e8;
-  --color-accent: #2f5bd3;
+  --color-highlight: #eff7f7;
+  --color-text: #323230;
+  --color-text-muted: #546983;
+  --color-heading: #1a3659;
+  --color-border: #b0c1d5;
+  --color-accent: #137996;
   --color-on-accent: #ffffff;
-  --color-focus: #2f5bd3;
-  --color-success: #1d7a46;
-  --color-warning: #9a5b00;
-  --color-danger: #b42318;
+  --color-focus: #137996;
+  --color-brand: #1a3659;
+  --color-on-brand: #ffffff;
+  --color-brand-highlight: #ffcb05;
+  --color-success: #117591;
+  /*
+   * The palette's orange (#f68c27) and red (#ed1c24) are below the 4.5:1 contrast needed for
+   * small text on white, so state colours use darker shades of the same hues.
+   */
+  --color-warning: #b35c00;
+  --color-danger: #c8161d;
 
   --radius: 8px;
   --radius-pill: 999px;
   --font-size-small: 0.875rem;
-  --shadow-panel: -8px 0 24px rgb(16 24 40 / 0.12);
+  --color-overlay: rgb(13 27 45 / 0.45);
+  --shadow-panel: -8px 0 24px rgb(13 27 45 / 0.16);
 
   font-family:
     system-ui,
@@ -42,6 +52,7 @@ h2,
 h3 {
   line-height: 1.25;
   margin: 0;
+  color: var(--color-heading);
 }
 
 h1 {

@@ -267,3 +267,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: A `<Transition>` around the child `<RouterView>`, which does not work cleanly with a modal `<dialog>` because it leaves the top layer as soon as it is closed on unmount.
 - Would change if: Browser Back should also animate out; today it closes the drawer immediately.
 - Category: frontend
+
+### Brand colour palette
+- Decision: The design tokens in `main.css` use the supplied palette: cream page background, navy header and headings, teal for actions and links, yellow for the active nav marker, light teal for row hover. Approved uses the palette's dark teal because the palette has no green. Pending and rejected text use darker shades of the palette's orange and red.
+- Why: Every component already reads colours from tokens, so the palette is one file plus a few spots that used hard-coded or neutral values. The palette's orange (#f68c27, about 2.3:1) and red (#ed1c24, about 4.4:1) fall short of the 4.5:1 WCAG AA contrast for small text on white.
+- Alternatives considered: Using the palette's orange and red unchanged, which would fail contrast on badges and error text; keeping a green for approved, which is outside the palette.
+- Would change if: The palette gains accessible state colours.
+- Category: frontend

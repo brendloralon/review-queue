@@ -169,7 +169,7 @@ async function onReview(payload: ReviewPayload): Promise<void> {
 }
 
 .drawer::backdrop {
-  background: rgb(16 24 40 / 0.4);
+  background: var(--color-overlay);
 }
 
 @media (prefers-reduced-motion: no-preference) {

@@ -89,7 +89,7 @@ tbody tr:last-child td {
 }
 
 .item-row:hover {
-  background: var(--color-background);
+  background: var(--color-highlight);
 }
 
 .row-link {

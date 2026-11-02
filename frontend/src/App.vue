@@ -19,8 +19,13 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <style scoped>
 .app-header {
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+/* The default teal focus ring is too dark to see on the navy header. */
+.app-header :focus-visible {
+  outline-color: var(--color-brand-highlight);
 }
 
 .app-header__inner,
@@ -39,7 +44,7 @@ import { RouterLink, RouterView } from 'vue-router'
 
 .brand {
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--color-on-brand);
   text-decoration: none;
 }
 
@@ -49,12 +54,16 @@ nav {
 }
 
 nav a {
+  color: var(--color-on-brand);
   text-decoration: none;
 }
 
 nav a.router-link-exact-active {
   font-weight: 600;
   text-decoration: underline;
+  text-decoration-color: var(--color-brand-highlight);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
 }
 
 .app-main {
