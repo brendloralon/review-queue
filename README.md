@@ -13,7 +13,8 @@ cd backend
 composer install
 php -r "copy('.env.example', '.env');"
 php artisan key:generate
-php artisan migrate --seed --no-interaction   # creates database/database.sqlite and sample items
+php -r "touch('database/database.sqlite');"   # creates the empty SQLite database file
+php artisan migrate --seed --no-interaction   # creates the tables and sample items
 php artisan serve                             # http://localhost:8000
 ```
 

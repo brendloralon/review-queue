@@ -309,3 +309,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: A status-dependent default in `ItemQuery`.
 - Would change if: Other clients used the API and needed the same triage default.
 - Category: api
+
+### Explicit step to create the SQLite file
+- Decision: The README creates `database/database.sqlite` with `php -r "touch(...)"` before `migrate --seed --no-interaction`.
+- Why: A fresh-clone run-through showed that `migrate --no-interaction` does not create a missing SQLite file (Laravel only creates it interactively or with `--force`). `php -r` works the same in PowerShell, cmd and bash.
+- Alternatives considered: `migrate --force`, which creates the file but exists to skip the production safety prompt and reads as if something risky were happening; a Composer script, which hides the step.
+- Would change if: The project moved to a server database.
+- Category: tooling
