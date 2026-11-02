@@ -32,7 +32,7 @@ Vue 3.5 + Vite + TypeScript SPA consuming the Laravel API. Shared contracts (API
 ## Accessibility
 
 - Semantic elements (`button`, `form`, `label`, `dialog` roles); every input has a label.
-- The item drawer has `role="dialog"` and `aria-modal="true"`, traps focus, closes on Esc, and returns focus to the element that opened it.
+- The item drawer is a native `<dialog>` opened with `showModal()` (built-in modal semantics and focus trap), closes on Esc and backdrop click, and returns focus to the element that opened it.
 - Status is never conveyed by color alone.
 
 ## Styling

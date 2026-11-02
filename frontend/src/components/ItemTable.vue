@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { RouterLink, useRoute } from 'vue-router'
 import StatusBadge from './StatusBadge.vue'
 import RiskBadge from './RiskBadge.vue'
 import type { Item } from '@/types/item'
 import { formatDateTime } from '@/utils/format'
 
 const { items } = defineProps<{ items: Item[] }>()
+
+// Links carry the current filters so closing the drawer returns to the same queue view.
+const route = useRoute()
 </script>
 
 <template>
@@ -24,7 +28,11 @@ const { items } = defineProps<{ items: Item[] }>()
       </thead>
       <tbody>
         <tr v-for="item in items" :key="item.id">
-          <td class="title-cell">{{ item.title }}</td>
+          <td class="title-cell">
+            <RouterLink :to="{ name: 'item', params: { id: item.id }, query: route.query }">
+              {{ item.title }}
+            </RouterLink>
+          </td>
           <td>{{ item.submitter_name }}</td>
           <td><StatusBadge :status="item.status" /></td>
           <td><RiskBadge :score="item.risk_score" :suggested-action="item.suggested_action" /></td>

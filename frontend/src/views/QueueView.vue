@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { RouterView } from 'vue-router'
 import ItemTable from '@/components/ItemTable.vue'
 import QueueFilters from '@/components/QueueFilters.vue'
 import { useItems } from '@/composables/useItems'
@@ -46,6 +47,8 @@ function clearFilters(): void {
       </p>
       <ItemTable :items="items" />
     </div>
+
+    <RouterView @reviewed="reload" />
   </section>
 </template>
 
