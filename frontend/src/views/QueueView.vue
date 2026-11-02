@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RouterView } from 'vue-router'
 import BulkReviewBar from '@/components/BulkReviewBar.vue'
 import ItemTable from '@/components/ItemTable.vue'
@@ -36,7 +36,15 @@ async function onBulkReview(payload: ReviewPayload): Promise<void> {
   }
 }
 
-const isFirstLoad = computed(() => isLoading.value && items.value.length === 0)
+// Only the very first load replaces the table; later loads (even onto an empty result) keep
+// the table and its headers on screen and fade it, so typing a search doesn't flicker.
+const hasLoadedItems = ref(false)
+watch(isLoading, (loading) => {
+  if (!loading && !errorMessage.value) {
+    hasLoadedItems.value = true
+  }
+})
+const isFirstLoad = computed(() => isLoading.value && !hasLoadedItems.value)
 const hasActiveFilters = computed(
   () =>
     queueQuery.value.status !== DEFAULT_QUEUE_QUERY.status ||
@@ -75,11 +83,6 @@ function clearFilters(): void {
       <button type="button" @click="reload">Try again</button>
     </div>
 
-    <div v-else-if="items.length === 0" class="state" role="status">
-      <p>No items match these filters.</p>
-      <button v-if="hasActiveFilters" type="button" @click="clearFilters">Clear filters</button>
-    </div>
-
     <div v-else :aria-busy="isLoading" :class="{ refreshing: isLoading }">
       <p class="result-count" role="status">
         {{ items.length }} {{ items.length === 1 ? 'item' : 'items' }}
@@ -101,7 +104,17 @@ function clearFilters(): void {
         @sort="updateQueueQuery({ sort: $event })"
         @toggle="selection.toggle"
         @toggle-all="selection.toggleAll"
-      />
+      >
+        <!-- Inside the table, so the headers and sort controls stay in place while searching. -->
+        <template #empty>
+          <div class="empty-state" role="status">
+            <p>No items match these filters.</p>
+            <button v-if="hasActiveFilters" type="button" @click="clearFilters">
+              Clear filters
+            </button>
+          </div>
+        </template>
+      </ItemTable>
     </div>
 
     <RouterView @reviewed="reload" />
@@ -129,6 +142,14 @@ function clearFilters(): void {
   border-style: solid;
   border-color: var(--color-danger);
   color: var(--color-danger);
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+.empty-state button {
+  margin-top: 0.75rem;
 }
 
 .result-count {

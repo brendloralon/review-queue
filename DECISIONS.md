@@ -337,3 +337,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: Checkboxes on every tab, disabled for reviewed items; keeping hidden items selected across searches; a confirmation dialog before bulk reject (left out to keep the flow short: the reviewer ticks each item explicitly and sees the result immediately).
 - Would change if: Reviewers needed to select across pages (once pagination exists), or asked for a confirmation step.
 - Category: frontend
+
+### Empty results stay inside the table
+- Decision: When nothing matches, the table keeps its headers and shows "No items match these filters." with a Clear filters button in a single full-width row. Only the very first load replaces the table with a loading message; later loads keep the table and fade it.
+- Why: Searching is iterative. Keeping the headers and sort controls in place avoids the layout jumping between "table" and "empty box" on each keystroke, and makes it clear the result is an empty list, not a broken page.
+- Alternatives considered: A separate empty-state box replacing the table (the first version).
+- Would change if: The empty state needed richer content (illustration, suggestions) that doesn't fit a table row.
+- Category: frontend

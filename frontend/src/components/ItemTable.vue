@@ -22,18 +22,23 @@ const {
 }>()
 const emit = defineEmits<{ sort: [sort: ItemSort]; toggle: [id: number]; toggleAll: [] }>()
 
-const allSelected = computed(() => items.length > 0 && selectedIds.length === items.length)
-const someSelected = computed(() => selectedIds.length > 0 && !allSelected.value)
-
-function isSelected(item: Item): boolean {
-  return selectedIds.includes(item.id)
-}
+defineSlots<{ empty(): unknown }>()
 
 const SORT_HEADERS: { column: SortableColumn; label: string }[] = [
   { column: 'status', label: 'Status' },
   { column: 'risk', label: 'Risk' },
   { column: 'submitted', label: 'Submitted' },
 ]
+
+// Title and Submitted by, plus the sortable headers and the optional checkbox column.
+const columnCount = computed(() => 2 + SORT_HEADERS.length + (selectable ? 1 : 0))
+
+const allSelected = computed(() => items.length > 0 && selectedIds.length === items.length)
+const someSelected = computed(() => selectedIds.length > 0 && !allSelected.value)
+
+function isSelected(item: Item): boolean {
+  return selectedIds.includes(item.id)
+}
 
 const SORT_ARROWS = { ascending: '↑', descending: '↓' } as const
 
@@ -87,6 +92,11 @@ const route = useRoute()
         </tr>
       </thead>
       <tbody>
+        <tr v-if="items.length === 0">
+          <td :colspan="columnCount" class="empty-cell">
+            <slot name="empty" />
+          </td>
+        </tr>
         <tr
           v-for="item in items"
           :key="item.id"
@@ -241,6 +251,12 @@ tbody tr:last-child td {
 .row-link:focus-visible::after {
   outline: 2px solid var(--color-focus);
   outline-offset: -2px;
+}
+
+.empty-cell {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
 }
 
 .title-cell {
