@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\ItemStatus;
 use App\Enums\SuggestedAction;
+use App\Exceptions\InvalidStatusTransition;
 use Database\Factories\ItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,6 +40,34 @@ class Item extends Model
     protected $attributes = [
         'status' => 'pending',
     ];
+
+    /**
+     * @throws InvalidStatusTransition when the flow forbids the move, including
+     *                                 when another request reviewed the item first
+     */
+    public function review(ItemStatus $decision, ?string $note): void
+    {
+        if (! $this->status->canTransitionTo($decision)) {
+            throw InvalidStatusTransition::for($this, $decision);
+        }
+
+        // Conditional update instead of save(): if another reviewer changed the status
+        // after this model was loaded, no row matches and their review is kept.
+        $updatedRows = static::query()
+            ->whereKey($this->getKey())
+            ->where('status', $this->status->value)
+            ->update([
+                'status' => $decision->value,
+                'review_note' => $note,
+                'reviewed_at' => now(),
+            ]);
+
+        $this->refresh();
+
+        if ($updatedRows === 0) {
+            throw InvalidStatusTransition::for($this, $decision);
+        }
+    }
 
     /**
      * @return array<string, string>
