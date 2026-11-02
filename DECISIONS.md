@@ -316,3 +316,17 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: `migrate --force`, which creates the file but exists to skip the production safety prompt and reads as if something risky were happening; a Composer script, which hides the step.
 - Would change if: The project moved to a server database.
 - Category: tooling
+
+### Stretch goal: bulk review
+- Decision: Built bulk review as the one stretch goal.
+- Why: It reuses the review rules instead of adding a separate concern, and it raises real design questions (partial failure, concurrency, selection UX). It also helps the reviewer's actual job: clearing obvious spam or obvious approvals in one step.
+- Alternatives considered: Pagination (lower risk, but mostly mechanical at this data size); optimistic updates; simple auth; containerization.
+- Would change if: N/A.
+- Category: tradeoff
+
+### Bulk review: independent items, per-item results
+- Decision: `POST /api/v1/items/bulk-review` takes `{ids, status, note?}` (1–50 distinct, existing ids) and calls `Item::review()` for each item through `App\Reviews\BulkReviewer`. A valid request returns 200 with `{reviewed: Item[], failed: [{id, message}]}`; there is no surrounding transaction.
+- Why: Each review is already atomic and race-safe, so reusing it keeps the rules in one place. With all-or-nothing, one item decided by another reviewer in the meantime would block the whole batch and force the reviewer to reselect and retry; per-item results let the rest go through and explain the exception with the same message as the single endpoint's 409. Unknown or repeated ids mean the client sent something wrong, so those are a 422 for the whole request.
+- Alternatives considered: All-or-nothing in a transaction returning 409; 207 Multi-Status, which few clients handle well; a single `UPDATE ... WHERE status = 'pending'`, which would skip the domain method and its messages.
+- Would change if: Batches had to be atomic (e.g. a later step depended on all items moving together).
+- Category: api

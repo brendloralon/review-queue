@@ -1,5 +1,12 @@
 import { request } from './client'
-import type { Item, ItemListParams, NewItem, ReviewPayload } from '@/types/item'
+import type {
+  BulkReviewPayload,
+  BulkReviewResult,
+  Item,
+  ItemListParams,
+  NewItem,
+  ReviewPayload,
+} from '@/types/item'
 
 interface ResourceResponse<T> {
   data: T
@@ -43,6 +50,15 @@ export async function submitItem(newItem: NewItem): Promise<Item> {
 
 export async function reviewItem(id: number, review: ReviewPayload): Promise<Item> {
   const response = await request<ResourceResponse<Item>>(`/items/${id}/review`, {
+    method: 'POST',
+    body: review,
+  })
+
+  return response.data
+}
+
+export async function bulkReviewItems(review: BulkReviewPayload): Promise<BulkReviewResult> {
+  const response = await request<ResourceResponse<BulkReviewResult>>('/items/bulk-review', {
     method: 'POST',
     body: review,
   })

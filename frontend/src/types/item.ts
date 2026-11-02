@@ -42,3 +42,18 @@ export interface ReviewPayload {
   status: ReviewDecision
   note: string | null
 }
+
+export interface BulkReviewPayload extends ReviewPayload {
+  ids: number[]
+}
+
+// Mirrors App\Http\Resources\V1\BulkReviewResource.
+export interface BulkReviewFailure {
+  id: number
+  message: string
+}
+
+export interface BulkReviewResult {
+  reviewed: Item[]
+  failed: BulkReviewFailure[]
+}
