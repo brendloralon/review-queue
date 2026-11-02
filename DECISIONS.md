@@ -121,6 +121,76 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Would change if: Rules changed frequently — then add an `items:rescore` command.
 - Category: api
 
+### Moderation: three additive rules and two thresholds
+- Decision: `BlocklistedTermsRule` (+40 per distinct phrase), `ShoutingRule` (+20 when >60% of ≥20 letters are uppercase), `LinksRule` (+15 for 1–2 URLs, +35 for 3+). Scores are summed and clamped to 0–100; below 30 suggests approve, 30–69 review, 70+ reject.
+- Why: Each rule is easy to explain and test in isolation; additive scores make the combined result predictable; thresholds as named constants make tuning a one-line change.
+- Alternatives considered: Weighted or multiplicative scoring; ML/third-party moderation APIs (overkill and opaque for this scope).
+- Would change if: False positives became a problem (then per-rule weights in config, or word-boundary matching).
+- Category: data-model
+
+### Rules are pure functions of the text
+- Decision: A rule receives `title + "\n" + body` and returns a score and flags; no database, HTTP or clock access.
+- Why: Adding a rule is one class plus one line in `ModerationService::rules()`, and every rule is unit-testable with a string.
+- Alternatives considered: Rules receiving the model; auto-discovery of rule classes (implicit, harder to follow).
+- Would change if: A rule needed context such as the submitter's history — then pass a small value object, not the model.
+- Category: data-model
+
+### Invalid list params fall back to defaults instead of 422
+- Decision: `ItemQuery` ignores unknown params and replaces invalid `status`/`sort`/`search` values with defaults.
+- Why: The queue URL is user-editable and bookmarkable; an old or mistyped link should still show a sensible list rather than an error page.
+- Alternatives considered: A Form Request returning 422 for bad params.
+- Would change if: The API were public and clients needed strict feedback on mistakes.
+- Category: api
+
+### Named sort values
+- Decision: `sort` accepts `newest`, `oldest`, `highest_risk`, `lowest_risk`, mapped to column + direction in one array, with `id` as a tie-breaker.
+- Why: Column names never come from the request, and the names read well in the URL. The tie-breaker keeps ordering stable (and pagination-safe later).
+- Alternatives considered: `sort=-created_at` style column sorting.
+- Would change if: Many sortable columns were needed.
+- Category: api
+
+### Review accepts any status; the enum decides
+- Decision: The review request validates `status` against all `ItemStatus` values; `canTransitionTo()` rejects forbidden moves with 409 (e.g. `pending → pending`, or reviewing a reviewed item).
+- Why: The flow lives only in the enum, so changing it never requires touching validation. 422 means "malformed", 409 means "valid request, wrong state".
+- Alternatives considered: Validating `status` as `in:approved,rejected`.
+- Would change if: N/A.
+- Category: api
+
+### Conditional update to prevent lost reviews
+- Decision: `Item::review()` updates `WHERE id = ? AND status = <loaded status>`; zero affected rows means someone else reviewed first, which returns 409.
+- Why: Two reviewers opening the same item cannot silently overwrite each other, without locks or a version column.
+- Alternatives considered: `lockForUpdate()` in a transaction; an optimistic-locking version column.
+- Would change if: Items gained more editable fields that needed general optimistic locking.
+- Category: api
+
+### Blank notes become null
+- Decision: Rely on Laravel's default `TrimStrings` and `ConvertEmptyStringsToNull` middleware for the review note and submitted fields.
+- Why: Whitespace-only input is treated as missing with no custom code; a test proves the behaviour.
+- Alternatives considered: Manual trimming in the Form Request.
+- Would change if: Leading/trailing whitespace became meaningful.
+- Category: assumption
+
+### Simple LIKE search
+- Decision: Search uses SQL `LIKE '%term%'` over title, body and submitter name; terms over 100 characters are ignored.
+- Why: Enough for a small queue, zero setup. SQLite's LIKE is case-insensitive for ASCII.
+- Alternatives considered: SQLite FTS5 or a search service.
+- Would change if: The dataset grew large or users needed relevance ranking; `%` and `_` in a term are not escaped.
+- Category: tradeoff
+
+### Generic 500s rely on APP_DEBUG=false
+- Decision: Unexpected errors use Laravel's default JSON rendering, which hides details when `APP_DEBUG=false`.
+- Why: Laravel already guarantees a generic `{"message": "Server Error"}` in production; custom handling would duplicate it.
+- Alternatives considered: A custom catch-all renderer.
+- Would change if: Errors needed correlation IDs or a custom shape.
+- Category: assumption
+
+### Backend test strategy
+- Decision: Unit tests for each rule, `ModerationService` (combining, clamping, thresholds) and `ItemStatus` (every transition); feature tests for each endpoint against in-memory SQLite, including 404/409/422 paths, the review race, and a seeder check.
+- Why: These are the areas the app's correctness depends on and the ones most likely to change.
+- Alternatives considered: Browser/E2E tests (slow, high setup cost for this scope).
+- Would change if: The frontend grew complex enough to justify E2E coverage.
+- Category: testing
+
 ### AI rules split per folder
 - Decision: Shared contracts in the root `CLAUDE.md`; Laravel rules in `backend/`; Vue rules in `frontend/AGENTS.md` imported by `frontend/CLAUDE.md`.
 - Why: Each stack's rules load only when working in that folder, nothing is duplicated, and `AGENTS.md` keeps the frontend rules readable by other AI tools.
