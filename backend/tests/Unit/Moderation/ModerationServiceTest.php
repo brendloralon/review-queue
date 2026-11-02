@@ -20,6 +20,15 @@ class ModerationServiceTest extends TestCase
         $this->assertSame(SuggestedAction::Approve, $result->suggestedAction);
     }
 
+    public function test_score_is_clamped_to_the_maximum(): void
+    {
+        $result = (new ModerationService)->moderate('Free money', 'Click here and buy now.');
+
+        $this->assertSame(100, $result->riskScore);
+        $this->assertSame(['blocklisted_terms'], $result->flags);
+        $this->assertSame(SuggestedAction::Reject, $result->suggestedAction);
+    }
+
     /**
      * @return array<string, array{int, SuggestedAction}>
      */

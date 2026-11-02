@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Moderation;
 
 use App\Enums\SuggestedAction;
+use App\Moderation\Rules\BlocklistedTermsRule;
 
 final class ModerationService
 {
@@ -53,6 +54,8 @@ final class ModerationService
      */
     private function rules(): array
     {
-        return [];
+        return [
+            new BlocklistedTermsRule,
+        ];
     }
 }
