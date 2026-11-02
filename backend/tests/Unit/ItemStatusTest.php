@@ -38,4 +38,11 @@ class ItemStatusTest extends TestCase
     {
         $this->assertSame([ItemStatus::Approved, ItemStatus::Rejected], ItemStatus::reviewedStatuses());
     }
+
+    public function test_workflow_position_puts_pending_before_reviewed_statuses(): void
+    {
+        $this->assertSame(0, ItemStatus::Pending->workflowPosition());
+        $this->assertSame(1, ItemStatus::Approved->workflowPosition());
+        $this->assertSame(2, ItemStatus::Rejected->workflowPosition());
+    }
 }

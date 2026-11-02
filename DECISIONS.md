@@ -274,3 +274,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: Using the palette's orange and red unchanged, which would fail contrast on badges and error text; keeping a green for approved, which is outside the palette.
 - Would change if: The palette gains accessible state colours.
 - Category: frontend
+
+### Status sort follows the workflow
+- Decision: Added `pending_first` and `pending_last` sorts that order by workflow position (pending, approved, rejected) from `ItemStatus::workflowPosition()`, applied with a SQL `CASE`; `id` stays the tie-breaker in the same direction.
+- Why: Status is stored as a string, so a plain `ORDER BY status` would be alphabetical (approved, pending, rejected), which means nothing to a reviewer. Keeping the order in the enum means a new status must be placed explicitly.
+- Alternatives considered: Alphabetical order; a numeric status column, which would change the data model for one sort.
+- Would change if: More statuses made the CASE expression costly on large tables.
+- Category: api

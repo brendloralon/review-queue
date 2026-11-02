@@ -57,7 +57,7 @@ All endpoints are under `/api/v1` and return Laravel API Resources, so the respo
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /items?status=&search=&sort=` | List. `status`: `pending`, `approved`, `rejected` or `reviewed` (approved + rejected). `sort`: `newest` (default), `oldest`, `highest_risk`, `lowest_risk`. |
+| `GET /items?status=&search=&sort=` | List. `status`: `pending`, `approved`, `rejected` or `reviewed` (approved + rejected). `sort`: `newest` (default), `oldest`, `highest_risk`, `lowest_risk`, `pending_first`, `pending_last` (status in workflow order: pending, approved, rejected). |
 | `GET /items/{id}` | One item |
 | `POST /items` | Submit `{title, body, submitter_name}`; returns 201 with the moderation result |
 | `POST /items/{id}/review` | Review `{status, note?}` |

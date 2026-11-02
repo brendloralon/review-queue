@@ -87,6 +87,25 @@ class ListItemsTest extends TestCase
         $this->assertListedIds('?sort=lowest_risk', [$lowRiskOld->id, $midRiskNew->id, $highRiskMid->id]);
     }
 
+    public function test_items_can_be_sorted_by_workflow_status_not_alphabetically(): void
+    {
+        $rejected = Item::factory()->rejected()->create();
+        $pending = Item::factory()->create();
+        $approved = Item::factory()->approved()->create();
+
+        $this->assertListedIds('?sort=pending_first', [$pending->id, $approved->id, $rejected->id]);
+        $this->assertListedIds('?sort=pending_last', [$rejected->id, $approved->id, $pending->id]);
+    }
+
+    public function test_items_with_the_same_status_are_ordered_by_id(): void
+    {
+        $first = Item::factory()->create();
+        $second = Item::factory()->create();
+
+        $this->assertListedIds('?sort=pending_first', [$first->id, $second->id]);
+        $this->assertListedIds('?sort=pending_last', [$second->id, $first->id]);
+    }
+
     public function test_an_invalid_sort_falls_back_to_newest(): void
     {
         $older = Item::factory()->create(['created_at' => now()->subDay()]);

@@ -30,6 +30,8 @@ final class ItemQuery
         'oldest' => ['created_at', 'asc'],
         'highest_risk' => ['risk_score', 'desc'],
         'lowest_risk' => ['risk_score', 'asc'],
+        'pending_first' => ['status', 'asc'],
+        'pending_last' => ['status', 'desc'],
     ];
 
     /**
@@ -93,6 +95,32 @@ final class ItemQuery
         $sortName = is_string($sort) && array_key_exists($sort, self::SORTS) ? $sort : self::DEFAULT_SORT;
         [$column, $direction] = self::SORTS[$sortName];
 
-        $query->orderBy($column, $direction)->orderBy('id', $direction);
+        if ($column === 'status') {
+            $this->orderByWorkflowPosition($query, $direction);
+        } else {
+            $query->orderBy($column, $direction);
+        }
+
+        $query->orderBy('id', $direction);
+    }
+
+    /**
+     * Status is stored as a string, so ordering the column directly would be alphabetical
+     * (approved, pending, rejected). A CASE maps each status to its workflow position instead.
+     *
+     * @param  Builder<Item>  $query
+     */
+    private function orderByWorkflowPosition(Builder $query, string $direction): void
+    {
+        $cases = ItemStatus::cases();
+        $whenClauses = implode(' ', array_fill(0, count($cases), 'WHEN ? THEN ?'));
+        $bindings = [];
+
+        foreach ($cases as $status) {
+            array_push($bindings, $status->value, $status->workflowPosition());
+        }
+
+        // $direction comes from the SORTS whitelist, never from the request.
+        $query->orderByRaw("CASE status {$whenClauses} END {$direction}", $bindings);
     }
 }

@@ -10,6 +10,8 @@ export const SORT_OPTIONS = [
   'oldest',
   'highest_risk',
   'lowest_risk',
+  'pending_first',
+  'pending_last',
 ] as const satisfies readonly ItemSort[]
 
 export interface QueueQuery {

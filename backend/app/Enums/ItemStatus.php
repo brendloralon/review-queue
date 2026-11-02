@@ -36,6 +36,19 @@ enum ItemStatus: string
     }
 
     /**
+     * Position in the workflow, used by the queue's status sort. Exhaustive match on
+     * purpose, so a new status must be placed explicitly rather than sorted alphabetically.
+     */
+    public function workflowPosition(): int
+    {
+        return match ($this) {
+            self::Pending => 0,
+            self::Approved => 1,
+            self::Rejected => 2,
+        };
+    }
+
+    /**
      * The whole review flow lives here: reviewed items are final.
      *
      * @return list<self>

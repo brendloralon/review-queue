@@ -24,6 +24,8 @@ const SORT_LABELS: Record<ItemSort, string> = {
   oldest: 'Oldest first',
   highest_risk: 'Highest risk first',
   lowest_risk: 'Lowest risk first',
+  pending_first: 'Pending first',
+  pending_last: 'Pending last',
 }
 
 const SEARCH_DEBOUNCE_MS = 300
