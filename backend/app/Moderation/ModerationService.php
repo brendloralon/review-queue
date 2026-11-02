@@ -6,6 +6,7 @@ namespace App\Moderation;
 
 use App\Enums\SuggestedAction;
 use App\Moderation\Rules\BlocklistedTermsRule;
+use App\Moderation\Rules\ShoutingRule;
 
 final class ModerationService
 {
@@ -56,6 +57,7 @@ final class ModerationService
     {
         return [
             new BlocklistedTermsRule,
+            new ShoutingRule,
         ];
     }
 }
