@@ -14,6 +14,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ItemController extends Controller
 {
+    public function show(Item $item): ItemResource
+    {
+        return ItemResource::make($item);
+    }
+
     public function store(StoreItemRequest $request, ModerationService $moderation): JsonResponse
     {
         $validated = $request->validated();

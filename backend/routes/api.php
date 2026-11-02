@@ -7,4 +7,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::post('items', [ItemController::class, 'store']);
+    Route::get('items/{item}', [ItemController::class, 'show']);
 });
