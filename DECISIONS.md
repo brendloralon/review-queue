@@ -253,3 +253,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: One large root file.
 - Would change if: The project became a single-stack app.
 - Category: tooling
+
+### Whole queue row opens the drawer
+- Decision: The title link is stretched over its row with CSS (`::after` covering the `<tr>`), so clicking anywhere on the row opens the item; the title is no longer underlined.
+- Why: A larger click target without adding a second interactive element; the row stays one real link, so keyboard focus, screen readers, middle-click and "open in new tab" keep working.
+- Alternatives considered: A `@click` handler on `<tr>` calling `router.push`, which needs extra `tabindex`/key handling and loses native link behaviour.
+- Would change if: Rows gained their own controls (e.g. bulk-select checkboxes), which would need to sit above the stretched link.
+- Category: frontend

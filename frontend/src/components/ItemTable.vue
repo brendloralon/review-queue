@@ -27,9 +27,12 @@ const route = useRoute()
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in items" :key="item.id">
+        <tr v-for="item in items" :key="item.id" class="item-row">
           <td class="title-cell">
-            <RouterLink :to="{ name: 'item', params: { id: item.id }, query: route.query }">
+            <RouterLink
+              :to="{ name: 'item', params: { id: item.id }, query: route.query }"
+              class="row-link"
+            >
               {{ item.title }}
             </RouterLink>
           </td>
@@ -73,6 +76,40 @@ th {
 
 tbody tr:last-child td {
   border-bottom: none;
+}
+
+/*
+ * The title link is stretched over the whole row (its ::after covers the <tr>), so clicking
+ * anywhere opens the drawer. A real link stays the single interactive element, which keeps
+ * keyboard, screen reader, middle-click and "open in new tab" behaviour without a JS row handler.
+ */
+.item-row {
+  position: relative;
+  cursor: pointer;
+}
+
+.item-row:hover {
+  background: var(--color-background);
+}
+
+.row-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.row-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.row-link:focus-visible {
+  outline: none;
+}
+
+.row-link:focus-visible::after {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
 }
 
 .title-cell {
