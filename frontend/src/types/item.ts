@@ -22,12 +22,7 @@ export interface Item {
 export type ItemStatusFilter = ItemStatus | 'reviewed'
 
 export type ItemSort =
-  | 'newest'
-  | 'oldest'
-  | 'highest_risk'
-  | 'lowest_risk'
-  | 'pending_first'
-  | 'pending_last'
+  'newest' | 'oldest' | 'highest_risk' | 'lowest_risk' | 'pending_first' | 'pending_last'
 
 export interface ItemListParams {
   status?: ItemStatusFilter

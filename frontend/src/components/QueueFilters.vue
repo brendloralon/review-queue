@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, useId, watch } from 'vue'
-import {
-  STATUS_FILTERS,
-  SORT_OPTIONS,
-  type QueueQuery,
-  type StatusFilter,
-} from '@/composables/useQueueQuery'
-import type { ItemSort } from '@/types/item'
+import { STATUS_FILTERS, type QueueQuery, type StatusFilter } from '@/composables/useQueueQuery'
 
 const { query } = defineProps<{ query: QueueQuery }>()
 const emit = defineEmits<{ change: [changes: Partial<QueueQuery>] }>()
@@ -19,19 +13,9 @@ const STATUS_FILTER_LABELS: Record<StatusFilter, string> = {
   all: 'All',
 }
 
-const SORT_LABELS: Record<ItemSort, string> = {
-  newest: 'Newest first',
-  oldest: 'Oldest first',
-  highest_risk: 'Highest risk first',
-  lowest_risk: 'Lowest risk first',
-  pending_first: 'Pending first',
-  pending_last: 'Pending last',
-}
-
 const SEARCH_DEBOUNCE_MS = 300
 
 const searchId = useId()
-const sortId = useId()
 const searchText = ref(query.search)
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -48,10 +32,6 @@ watch(
 function onSearchInput(): void {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => emit('change', { search: searchText.value }), SEARCH_DEBOUNCE_MS)
-}
-
-function onSortChange(event: Event): void {
-  emit('change', { sort: (event.target as HTMLSelectElement).value as ItemSort })
 }
 
 onBeforeUnmount(() => clearTimeout(searchTimer))
@@ -84,15 +64,6 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
         @input="onSearchInput"
       />
     </div>
-
-    <div class="field">
-      <label :for="sortId">Sort</label>
-      <select :id="sortId" :value="query.sort" @change="onSortChange">
-        <option v-for="sort in SORT_OPTIONS" :key="sort" :value="sort">
-          {{ SORT_LABELS[sort] }}
-        </option>
-      </select>
-    </div>
   </form>
 </template>
 
@@ -106,7 +77,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
 }
 
 /*
- * Same height as the search input and sort select, so the row lines up. A fixed height can't wrap,
+ * Same height as the search input, so the row lines up. A fixed height can't wrap,
  * so on narrow screens the options scroll sideways instead.
  */
 .status-filter {

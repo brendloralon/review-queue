@@ -45,7 +45,11 @@ function clearFilters(): void {
       <p class="result-count" role="status">
         {{ items.length }} {{ items.length === 1 ? 'item' : 'items' }}
       </p>
-      <ItemTable :items="items" />
+      <ItemTable
+        :items="items"
+        :sort="queueQuery.sort"
+        @sort="updateQueueQuery({ sort: $event })"
+      />
     </div>
 
     <RouterView @reviewed="reload" />

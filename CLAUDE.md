@@ -61,7 +61,8 @@ Development shell is Windows PowerShell 5.1: chain commands with `;`, not `&&`.
 |---|---|
 | New heuristic | new rule class + register it + unit test |
 | Review state flow | `ItemStatus` + its test; review Form Request and frontend status type if values change |
-| New filter or sort | `ItemQuery` whitelist + feature test; `useQueueQuery` + the filter control |
+| New filter | `ItemQuery` whitelist + feature test; `useQueueQuery` + `QueueFilters` |
+| New sort | `ItemQuery` whitelist + feature test; `ItemSort` type + `useQueueQuery`; `utils/queueSort.ts` column mapping + its test |
 | New item field | migration, model casts, Resource, frontend type |
 
 ## Code Style

@@ -2,10 +2,20 @@
 import { RouterLink, useRoute } from 'vue-router'
 import StatusBadge from './StatusBadge.vue'
 import RiskBadge from './RiskBadge.vue'
-import type { Item } from '@/types/item'
+import type { Item, ItemSort } from '@/types/item'
 import { formatDateTime } from '@/utils/format'
+import { nextSort, sortDirectionOf, type SortableColumn } from '@/utils/queueSort'
 
-const { items } = defineProps<{ items: Item[] }>()
+const { items, sort } = defineProps<{ items: Item[]; sort: ItemSort }>()
+const emit = defineEmits<{ sort: [sort: ItemSort] }>()
+
+const SORTABLE_HEADERS: { column: SortableColumn; label: string }[] = [
+  { column: 'status', label: 'Status' },
+  { column: 'risk', label: 'Risk' },
+  { column: 'submitted', label: 'Submitted' },
+]
+
+const SORT_ARROWS = { ascending: '↑', descending: '↓' } as const
 
 // Links carry the current filters so closing the drawer returns to the same queue view.
 const route = useRoute()
@@ -21,9 +31,25 @@ const route = useRoute()
         <tr>
           <th scope="col">Title</th>
           <th scope="col">Submitted by</th>
-          <th scope="col">Status</th>
-          <th scope="col">Risk</th>
-          <th scope="col">Submitted</th>
+          <!-- aria-sort sits only on the active column, so screen readers announce the current order. -->
+          <th
+            v-for="header in SORTABLE_HEADERS"
+            :key="header.column"
+            scope="col"
+            :aria-sort="sortDirectionOf(header.column, sort)"
+          >
+            <button
+              type="button"
+              class="sort-button"
+              :class="{ 'sort-button--active': sortDirectionOf(header.column, sort) }"
+              @click="emit('sort', nextSort(header.column, sort))"
+            >
+              {{ header.label }}
+              <span class="sort-arrow" aria-hidden="true">
+                {{ SORT_ARROWS[sortDirectionOf(header.column, sort) ?? 'descending'] }}
+              </span>
+            </button>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -72,6 +98,32 @@ th {
   font-size: var(--font-size-small);
   color: var(--color-text-muted);
   font-weight: 600;
+}
+
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-weight: inherit;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.sort-button:hover,
+.sort-button--active {
+  color: var(--color-heading);
+}
+
+/* Inactive columns show a faint arrow so it is clear the header can be clicked. */
+.sort-arrow {
+  opacity: 0.35;
+}
+
+.sort-button--active .sort-arrow {
+  opacity: 1;
 }
 
 tbody tr:last-child td {

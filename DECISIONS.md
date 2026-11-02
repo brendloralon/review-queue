@@ -281,3 +281,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: Alphabetical order; a numeric status column, which would change the data model for one sort.
 - Would change if: More statuses made the CASE expression costly on large tables.
 - Category: api
+
+### Sorting from the table headers
+- Decision: The Status, Risk and Submitted headers are sort buttons (`aria-sort` on the active column); the sort dropdown is gone. The first click uses the direction a reviewer most likely wants (pending first, riskiest first, newest first) and a second click flips it. The column-to-sort mapping lives in `utils/queueSort.ts`; the sort is still stored in the URL through `useQueueQuery`.
+- Why: Every sort maps to a visible column, and sortable headers are the convention for data tables: the order is shown where the reviewer is looking and is announced to screen readers. Title and submitter stay unsortable, since nobody asked for them.
+- Alternatives considered: Keeping the dropdown, which suits sorts without a matching column or a card layout; offering both, which gives two controls for one piece of state.
+- Would change if: A sort without a matching column was added, or the queue switched to cards on mobile.
+- Category: frontend
