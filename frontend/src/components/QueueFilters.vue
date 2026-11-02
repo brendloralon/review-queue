@@ -103,18 +103,25 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
   margin-bottom: 1.25rem;
 }
 
+/*
+ * Same height as the search input and sort select, so the row lines up. A fixed height can't wrap,
+ * so on narrow screens the options scroll sideways instead.
+ */
 .status-filter {
   display: flex;
-  flex-wrap: wrap;
+  max-width: 100%;
+  overflow-x: auto;
+  height: var(--control-height);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 0.25rem;
+  padding: 0.1875rem;
   margin: 0;
   background: var(--color-surface);
 }
 
 .status-option {
   position: relative;
+  display: flex;
 }
 
 .status-option input {
@@ -123,8 +130,9 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
 }
 
 .status-option span {
-  display: block;
-  padding: 0.375rem 0.75rem;
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
   border-radius: calc(var(--radius) - 2px);
   cursor: pointer;
 }

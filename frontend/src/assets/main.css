@@ -20,6 +20,7 @@
   --color-warning: #b35c00;
   --color-danger: #c8161d;
 
+  --control-height: 2.5rem;
   --radius: 8px;
   --radius-pill: 999px;
   --font-size-small: 0.875rem;
@@ -74,6 +75,12 @@ textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface);
+}
+
+/* Browsers size text inputs and selects differently; a shared height lets them line up in a row. */
+input:not([type='radio'], [type='checkbox']),
+select {
+  height: var(--control-height);
 }
 
 button {
