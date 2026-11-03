@@ -18,7 +18,8 @@ const router = createRouter({
       ],
     },
     {
-      path: '/submit',
+      // Resource-style like /items/:id; the numeric :id pattern keeps "new" from matching it.
+      path: '/items/new',
       name: 'submit',
       component: () => import('@/views/SubmitItemView.vue'),
     },

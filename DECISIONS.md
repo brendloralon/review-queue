@@ -372,3 +372,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: Keeping the faded previous results (stale rows look current); a spinner (says nothing about the layout); skeletons only on the first load (tab switches would still show the wrong tab's rows).
 - Would change if: Loads became fast enough in production that the skeleton only flashes; then it could appear after a short delay instead of immediately.
 - Category: frontend
+
+### Submit page lives at `/items/new`
+- Decision: The submission form's URL is `/items/new` instead of `/submit`. The route name stays `submit`, so links are unchanged.
+- Why: URLs name resources, and this keeps every item page in one family next to `/items/:id`, mirroring `POST /api/v1/items`. It also leaves room for `/items/:id/edit`. The item route only matches numeric ids, so `new` can't be read as an id.
+- Alternatives considered: `/submit`, a verb-style route that suits standalone actions such as `/login`, but reads inconsistently next to `/items/:id`.
+- Would change if: Submitting became a separate public site from the reviewer tool, where a short action URL such as `/submit` reads better.
+- Category: frontend
