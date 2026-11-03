@@ -379,3 +379,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: `/submit`, a verb-style route that suits standalone actions such as `/login`, but reads inconsistently next to `/items/:id`.
 - Would change if: Submitting became a separate public site from the reviewer tool, where a short action URL such as `/submit` reads better.
 - Category: frontend
+
+### Input validation: reject unusual characters, escape output
+- Decision: `App\Rules\PlainText` rejects control characters (only tab and line breaks allowed, and only in multi-line fields), zero-width/word-joiner/BOM characters, and bidirectional embedding, override and isolate controls. It applies to title (single line), body, and review notes (single and bulk). Submitter names must start with a letter and contain only letters (any script), marks, spaces, apostrophes, hyphens and periods. The submit form mirrors these checks in `utils/inputValidation.ts` and blocks the request with the same messages; the API remains the authority.
+- Why: These characters have no place in typed text and can hide or reorder what a reviewer reads (e.g. a right-to-left override making `fdp.exe` look like `exe.pdf`), or break logs and exports. XSS and SQL injection are handled where they occur instead of by filtering input: Vue escapes all rendered text (no `v-html`), and every query binds its values, including the one raw `CASE` sort.
+- Alternatives considered: Rejecting or stripping `<` and `>` (blocks legitimate reports and gives false confidence, since the output layer must escape anyway); HTML-encoding on input (double-escapes in the UI and corrupts the stored text); a sanitizer library (unneeded, since the app never renders HTML).
+- Would change if: The app started rendering rich text or HTML, which would need an allow-list sanitizer at render time, or names with digits had to be supported.
+- Category: api

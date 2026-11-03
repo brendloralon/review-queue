@@ -3,13 +3,8 @@ import { reactive, useId } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSubmitItem } from '@/composables/useSubmitItem'
 import type { NewItem } from '@/types/item'
-
-// Mirrors the limits in StoreItemRequest so users hit them while typing, not on submit.
-const MAX_LENGTHS: Record<keyof NewItem, number> = {
-  title: 120,
-  body: 5000,
-  submitter_name: 80,
-}
+// Used as maxlength too, so users hit the limits while typing, not on submit.
+import { NEW_ITEM_MAX_LENGTHS as MAX_LENGTHS } from '@/utils/inputValidation'
 
 const router = useRouter()
 const { isSubmitting, errorMessage, fieldErrors, submit } = useSubmitItem()

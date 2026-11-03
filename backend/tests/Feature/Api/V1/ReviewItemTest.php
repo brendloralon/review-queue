@@ -83,7 +83,20 @@ class ReviewItemTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['status', 'note']);
 
+        $this->postJson("/api/v1/items/{$item->id}/review", ['status' => 'approved', 'note' => "Looks\u{0000}fine"])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['note']);
+
         $this->assertSame(ItemStatus::Pending, $item->fresh()->status);
+    }
+
+    public function test_a_multiline_note_is_accepted(): void
+    {
+        $item = Item::factory()->create();
+
+        $this->postJson("/api/v1/items/{$item->id}/review", ['status' => 'approved', 'note' => "Checked.\nLooks fine."])
+            ->assertOk()
+            ->assertJsonPath('data.review_note', "Checked.\nLooks fine.");
     }
 
     public function test_reviewing_an_unknown_item_returns_404(): void

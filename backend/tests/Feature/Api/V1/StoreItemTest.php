@@ -7,6 +7,7 @@ namespace Tests\Feature\Api\V1;
 use App\Models\Item;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class StoreItemTest extends TestCase
@@ -76,5 +77,59 @@ class StoreItemTest extends TestCase
         ]);
 
         $response->assertCreated()->assertJsonPath('data.status', 'pending');
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function disallowedInput(): array
+    {
+        return [
+            'null byte in title' => ['title', "Broken\u{0000}title"],
+            'line break in title' => ['title', "First line\nSecond line"],
+            'escape sequence in body' => ['body', "Looks normal\u{001B}[2J"],
+            'direction override in body' => ['body', "Invoice \u{202E}fdp.exe"],
+            'zero-width space in title' => ['title', "Free\u{200B}money"],
+            'digits in name' => ['submitter_name', 'Agent 007'],
+            'symbols in name' => ['submitter_name', '<b>Dana</b>'],
+            'name starting with a symbol' => ['submitter_name', '-Dana'],
+        ];
+    }
+
+    #[DataProvider('disallowedInput')]
+    public function test_control_invisible_and_unexpected_characters_are_rejected(string $field, string $value): void
+    {
+        $payload = ['title' => 'Typo', 'body' => 'Small typo.', 'submitter_name' => 'Dana', $field => $value];
+
+        $this->postJson('/api/v1/items', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([$field]);
+
+        $this->assertDatabaseCount('items', 0);
+    }
+
+    public function test_ordinary_text_in_any_language_is_accepted(): void
+    {
+        $this->postJson('/api/v1/items', [
+            'title' => 'Héllo — שלום 👋',
+            'body' => "Line one\nLine two\twith a tab.",
+            'submitter_name' => "Anne-Marie O'Brien",
+        ])->assertCreated();
+
+        $this->postJson('/api/v1/items', [
+            'title' => 'Dr. Levi',
+            'body' => 'Text',
+            'submitter_name' => 'נועה כהן',
+        ])->assertCreated();
+    }
+
+    public function test_html_is_stored_and_returned_as_plain_text(): void
+    {
+        // Rejecting < and > would block real reports; output escaping is what prevents XSS.
+        $title = 'Score < 30 shows <script>alert(1)</script>';
+
+        $this->postJson('/api/v1/items', ['title' => $title, 'body' => 'Text', 'submitter_name' => 'Dana'])
+            ->assertCreated()
+            ->assertJsonPath('data.title', $title);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\V1;
 
 use App\Enums\ItemStatus;
+use App\Rules\PlainText;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,7 +28,7 @@ class BulkReviewItemsRequest extends FormRequest
             'ids' => ['required', 'array', 'min:1', 'max:'.self::MAX_ITEMS],
             'ids.*' => ['required', 'integer', 'distinct', 'exists:items,id'],
             'status' => ['required', Rule::enum(ItemStatus::class)],
-            'note' => ['nullable', 'string', 'max:1000'],
+            'note' => ['nullable', 'string', 'max:1000', PlainText::multiline()],
         ];
     }
 
