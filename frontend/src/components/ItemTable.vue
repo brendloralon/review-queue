@@ -13,12 +13,14 @@ const {
   sortableColumns,
   selectable = false,
   selectedIds = [],
+  loading = false,
 } = defineProps<{
   items: Item[]
   sort: ItemSort
   sortableColumns: SortableColumn[]
   selectable?: boolean
   selectedIds?: number[]
+  loading?: boolean
 }>()
 const emit = defineEmits<{ sort: [sort: ItemSort]; toggle: [id: number]; toggleAll: [] }>()
 
@@ -32,6 +34,18 @@ const SORT_HEADERS: { column: SortableColumn; label: string }[] = [
 
 // Title and Submitted by, plus the sortable headers and the optional checkbox column.
 const columnCount = computed(() => 2 + SORT_HEADERS.length + (selectable ? 1 : 0))
+
+// Placeholder rows roughly match what is on screen, so the table height barely changes.
+const MIN_SKELETON_ROWS = 3
+const MAX_SKELETON_ROWS = 10
+const skeletonRowCount = computed(() =>
+  Math.min(Math.max(items.length, MIN_SKELETON_ROWS), MAX_SKELETON_ROWS),
+)
+
+// Varying title lengths keep the placeholders from looking like a grid of identical bars.
+function skeletonTitleWidth(row: number): string {
+  return `${55 + ((row * 17) % 35)}%`
+}
 
 const allSelected = computed(() => items.length > 0 && selectedIds.length === items.length)
 const someSelected = computed(() => selectedIds.length > 0 && !allSelected.value)
@@ -52,6 +66,15 @@ const route = useRoute()
       <caption class="visually-hidden">
         Submitted items
       </caption>
+      <!-- Fixed widths so columns don't shift between placeholder rows and real content. -->
+      <colgroup>
+        <col v-if="selectable" class="column-select" />
+        <col />
+        <col class="column-submitter" />
+        <col class="column-status" />
+        <col class="column-risk" />
+        <col class="column-submitted" />
+      </colgroup>
       <thead>
         <tr>
           <th v-if="selectable" scope="col" class="select-cell">
@@ -60,7 +83,7 @@ const route = useRoute()
                 type="checkbox"
                 :checked="allSelected"
                 :indeterminate="someSelected"
-                :disabled="items.length === 0"
+                :disabled="loading || items.length === 0"
                 @change="emit('toggleAll')"
               />
               <span class="visually-hidden">Select all items</span>
@@ -91,7 +114,21 @@ const route = useRoute()
           </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody v-if="loading" aria-hidden="true">
+        <tr v-for="row in skeletonRowCount" :key="row" class="skeleton-row">
+          <td v-if="selectable" class="select-cell skeleton-select">
+            <span class="skeleton skeleton--checkbox"></span>
+          </td>
+          <td class="title-cell">
+            <span class="skeleton" :style="{ width: skeletonTitleWidth(row) }"></span>
+          </td>
+          <td><span class="skeleton skeleton--name"></span></td>
+          <td><span class="skeleton skeleton--badge"></span></td>
+          <td><span class="skeleton skeleton--risk"></span></td>
+          <td><span class="skeleton skeleton--date"></span></td>
+        </tr>
+      </tbody>
+      <tbody v-else>
         <tr v-if="items.length === 0">
           <td :colspan="columnCount" class="empty-cell">
             <slot name="empty" />
@@ -141,9 +178,42 @@ const route = useRoute()
   background: var(--color-surface);
 }
 
+/*
+ * Fixed layout: column widths come from the <col> elements, not from the content, so they stay
+ * the same while loading. The title column takes the remaining space; the minimum width keeps
+ * it readable and lets narrow screens scroll the table sideways instead.
+ */
 table {
   width: 100%;
+  min-width: 56rem;
+  table-layout: fixed;
   border-collapse: collapse;
+}
+
+.column-select {
+  width: 2.75rem;
+}
+
+.column-submitter {
+  width: 11rem;
+}
+
+.column-status {
+  width: 8rem;
+}
+
+.column-risk {
+  width: 10rem;
+}
+
+.column-submitted {
+  width: 13rem;
+}
+
+/* Taller than the status badge row, so real and placeholder rows are exactly the same height. */
+.item-row,
+.skeleton-row {
+  height: 3.5rem;
 }
 
 th,
@@ -151,6 +221,8 @@ td {
   padding: 0.75rem 1rem;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
+  /* Fixed columns can't grow, so a long unbroken title or name wraps instead of overflowing. */
+  overflow-wrap: anywhere;
 }
 
 th {
@@ -212,7 +284,6 @@ tbody tr:last-child td {
  * the checkbox selects the row instead of opening the drawer.
  */
 .select-cell {
-  width: 1%;
   padding: 0;
 }
 
@@ -253,6 +324,67 @@ tbody tr:last-child td {
   outline-offset: -2px;
 }
 
+.skeleton {
+  display: inline-block;
+  width: 100%;
+  height: 0.875rem;
+  vertical-align: middle;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--color-border) 45%, transparent);
+}
+
+.skeleton--checkbox {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.skeleton--name {
+  width: 6rem;
+}
+
+.skeleton--badge {
+  width: 4.5rem;
+  height: 1.25rem;
+  border-radius: 999px;
+}
+
+.skeleton--risk {
+  width: 5rem;
+}
+
+.skeleton--date {
+  width: 7.5rem;
+}
+
+/* Same padding as the checkbox label, so the placeholder sits where the real checkbox will. */
+.skeleton-select {
+  padding: 0.75rem 0.5rem 0.75rem 1rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--color-surface) 70%, transparent),
+      transparent
+    );
+    background-size: 50% 100%;
+    background-repeat: no-repeat;
+    animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: -50% 0;
+  }
+
+  to {
+    background-position: 150% 0;
+  }
+}
+
 .empty-cell {
   padding: 2rem 1rem;
   text-align: center;
@@ -261,7 +393,6 @@ tbody tr:last-child td {
 
 .title-cell {
   font-weight: 600;
-  min-width: 14rem;
 }
 
 .date-cell {

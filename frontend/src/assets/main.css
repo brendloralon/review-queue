@@ -36,6 +36,8 @@
   line-height: 1.5;
   color: var(--color-text);
   background: var(--color-background);
+  /* Reserve the scrollbar's space so pages don't shift sideways when content grows or shrinks. */
+  scrollbar-gutter: stable;
 }
 
 *,

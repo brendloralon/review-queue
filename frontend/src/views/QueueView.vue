@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { RouterView } from 'vue-router'
 import BulkReviewBar from '@/components/BulkReviewBar.vue'
 import ItemTable from '@/components/ItemTable.vue'
@@ -36,15 +36,6 @@ async function onBulkReview(payload: ReviewPayload): Promise<void> {
   }
 }
 
-// Only the very first load replaces the table; later loads (even onto an empty result) keep
-// the table and its headers on screen and fade it, so typing a search doesn't flicker.
-const hasLoadedItems = ref(false)
-watch(isLoading, (loading) => {
-  if (!loading && !errorMessage.value) {
-    hasLoadedItems.value = true
-  }
-})
-const isFirstLoad = computed(() => isLoading.value && !hasLoadedItems.value)
 const hasActiveFilters = computed(
   () =>
     queueQuery.value.status !== DEFAULT_QUEUE_QUERY.status ||
@@ -91,16 +82,16 @@ function clearFilters(): void {
       </div>
     </div>
 
-    <p v-if="isFirstLoad" class="state" role="status">Loading items…</p>
-
-    <div v-else-if="errorMessage" class="state state--error" role="alert">
+    <div v-if="errorMessage" class="state state--error" role="alert">
       <p>{{ errorMessage }}</p>
       <button type="button" @click="reload">Try again</button>
     </div>
 
-    <div v-else :aria-busy="isLoading" :class="{ refreshing: isLoading }">
+    <!-- Loading shows placeholder rows inside the table, so the headers and layout never jump. -->
+    <div v-else :aria-busy="isLoading">
       <p class="result-count" role="status">
-        {{ items.length }} {{ items.length === 1 ? 'item' : 'items' }}
+        <template v-if="isLoading">Loading items…</template>
+        <template v-else>{{ items.length }} {{ items.length === 1 ? 'item' : 'items' }}</template>
       </p>
       <BulkReviewBar
         v-if="isBulkReviewAvailable"
@@ -116,6 +107,7 @@ function clearFilters(): void {
         :sortable-columns="sortableColumns"
         :selectable="isBulkReviewAvailable"
         :selected-ids="selection.selectedIds.value"
+        :loading="isLoading"
         @sort="updateQueueQuery({ sort: $event })"
         @toggle="selection.toggle"
         @toggle-all="selection.toggleAll"
@@ -190,10 +182,5 @@ function clearFilters(): void {
   margin-top: 0.25rem;
   padding-left: 1.25rem;
   color: var(--color-danger);
-}
-
-.refreshing {
-  opacity: 0.6;
-  transition: opacity 0.15s;
 }
 </style>

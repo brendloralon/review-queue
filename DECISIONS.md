@@ -365,3 +365,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: Checking only the database driver (a production deployment on SQLite would be slowed); a frontend-only delay (would also hide real API timing and couldn't tell which database is in use); browser DevTools network throttling (works, but every developer has to remember it).
 - Would change if: The app moved to a real database for local development too, where the delay would simply stop applying.
 - Category: tooling
+
+### Skeleton rows while the queue loads
+- Decision: Every queue load (first load, tab switch, search, sort, retry) shows placeholder rows inside the table, shaped like real rows (checkbox, title, submitter, status pill, risk, date) with a soft shimmer, and the count line reads "Loading items…". The row count follows what was on screen, between 3 and 10. To stop the page jumping between states, the table uses fixed column widths (title takes the rest), real and placeholder rows share one height, and the page always reserves the scrollbar's space. This replaces the separate "Loading items…" box and the faded table from "Empty results stay inside the table".
+- Why: Placeholders in the real columns show what is coming and keep the headers and layout still, where a faded table showed stale rows from the previous tab as if they belonged to the new one. The rows are hidden from screen readers; the count line announces the loading state instead. Reduced-motion users get static placeholders.
+- Alternatives considered: Keeping the faded previous results (stale rows look current); a spinner (says nothing about the layout); skeletons only on the first load (tab switches would still show the wrong tab's rows).
+- Would change if: Loads became fast enough in production that the skeleton only flashes; then it could appear after a short delay instead of immediately.
+- Category: frontend
