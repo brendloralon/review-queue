@@ -344,3 +344,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: A separate empty-state box replacing the table (the first version).
 - Would change if: The empty state needed richer content (illustration, suggestions) that doesn't fit a table row.
 - Category: frontend
+
+### Sliding highlight on the status filter
+- Decision: The selected status option is shown by one highlight behind the options that slides (220ms) to the new option, with the text colour fading alongside. Its position and width are measured from the selected option and re-measured on resize; reduced-motion users get an instant switch.
+- Why: The slide connects the old and new tab so the change is easy to follow. Measuring is needed because option widths depend on label text and font; a ResizeObserver keeps it aligned when the window or fonts change.
+- Alternatives considered: Fading each option's background (simpler, but the eye doesn't follow the move); CSS anchor positioning (no JavaScript, but not supported in every current browser).
+- Would change if: Anchor positioning were available everywhere, which would remove the measuring code.
+- Category: frontend

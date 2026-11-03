@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, useId, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 import { STATUS_FILTERS, type QueueQuery, type StatusFilter } from '@/composables/useQueueQuery'
 
 const { query } = defineProps<{ query: QueueQuery }>()
@@ -34,13 +34,62 @@ function onSearchInput(): void {
   searchTimer = setTimeout(() => emit('change', { search: searchText.value }), SEARCH_DEBOUNCE_MS)
 }
 
-onBeforeUnmount(() => clearTimeout(searchTimer))
+/*
+ * One highlight sits behind the options and moves to the selected one, so switching tabs
+ * slides instead of jumping. Its position is measured because option widths depend on
+ * label text and font, which CSS alone can't follow.
+ */
+const statusFilter = useTemplateRef<HTMLFieldSetElement>('statusFilter')
+const indicatorStyle = ref({ width: '0px', transform: 'translateX(0px)' })
+const isIndicatorAnimated = ref(false)
+let resizeObserver: ResizeObserver | undefined
+
+function moveIndicator(): void {
+  const options = statusFilter.value?.querySelectorAll<HTMLElement>('.status-option')
+  const selected = options?.[STATUS_FILTERS.indexOf(query.status)]
+
+  if (selected) {
+    indicatorStyle.value = {
+      width: `${selected.offsetWidth}px`,
+      transform: `translateX(${selected.offsetLeft}px)`,
+    }
+  }
+}
+
+watch(
+  () => query.status,
+  () => nextTick(moveIndicator),
+)
+
+onMounted(() => {
+  moveIndicator()
+  // Enable the slide only after the first position has been rendered, so it doesn't animate in
+  // from the left. One frame is not enough: its callback runs before that frame's style update,
+  // so the position and the transition would land together and still animate.
+  requestAnimationFrame(() => requestAnimationFrame(() => (isIndicatorAnimated.value = true)))
+
+  if (statusFilter.value) {
+    resizeObserver = new ResizeObserver(moveIndicator)
+    resizeObserver.observe(statusFilter.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  clearTimeout(searchTimer)
+  resizeObserver?.disconnect()
+})
 </script>
 
 <template>
   <form class="filters" role="search" @submit.prevent>
-    <fieldset class="status-filter">
+    <fieldset ref="statusFilter" class="status-filter">
       <legend class="visually-hidden">Status</legend>
+      <span
+        class="status-indicator"
+        :class="{ 'status-indicator--animated': isIndicatorAnimated }"
+        :style="indicatorStyle"
+        aria-hidden="true"
+      ></span>
       <label v-for="status in STATUS_FILTERS" :key="status" class="status-option">
         <input
           type="radio"
@@ -81,6 +130,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
  * so on narrow screens the options scroll sideways instead.
  */
 .status-filter {
+  position: relative;
   display: flex;
   max-width: 100%;
   overflow-x: auto;
@@ -92,9 +142,31 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
   background: var(--color-surface);
 }
 
+.status-indicator {
+  position: absolute;
+  top: 0.1875rem;
+  bottom: 0.1875rem;
+  left: 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--color-accent);
+}
+
 .status-option {
   position: relative;
+  z-index: 1;
   display: flex;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .status-indicator--animated {
+    transition:
+      transform 220ms ease-out,
+      width 220ms ease-out;
+  }
+
+  .status-option span {
+    transition: color 220ms ease-out;
+  }
 }
 
 .status-option input {
@@ -111,7 +183,6 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
 }
 
 .status-option input:checked + span {
-  background: var(--color-accent);
   color: var(--color-on-accent);
 }
 
