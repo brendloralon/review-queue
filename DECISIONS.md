@@ -351,3 +351,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: Fading each option's background (simpler, but the eye doesn't follow the move); CSS anchor positioning (no JavaScript, but not supported in every current browser).
 - Would change if: Anchor positioning were available everywhere, which would remove the measuring code.
 - Category: frontend
+
+### Empty message depends on the reason
+- Decision: With no search, an empty tab names its state ("No pending items.", "No approved items.", "No items yet." on All). With a search, it stays "No items match these filters."
+- Why: An empty Pending tab after a reviewer clears the queue is a finished state, not a failed filter; saying "match these filters" there reads like something went wrong.
+- Alternatives considered: Changing only the Pending message (left the other tabs with the same misleading wording); a celebratory "All caught up" message (more tone than the app uses elsewhere).
+- Would change if: The empty Pending state needed a next action, such as a link to submit an item.
+- Category: frontend

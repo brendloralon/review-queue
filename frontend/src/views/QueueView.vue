@@ -7,7 +7,7 @@ import QueueFilters from '@/components/QueueFilters.vue'
 import { summarizeBulkReview, useBulkReview } from '@/composables/useBulkReview'
 import { useItemSelection } from '@/composables/useItemSelection'
 import { useItems } from '@/composables/useItems'
-import { DEFAULT_QUEUE_QUERY, useQueueQuery } from '@/composables/useQueueQuery'
+import { DEFAULT_QUEUE_QUERY, useQueueQuery, type StatusFilter } from '@/composables/useQueueQuery'
 import type { ReviewPayload } from '@/types/item'
 import { sortableColumnsFor } from '@/utils/queueSort'
 
@@ -49,6 +49,21 @@ const hasActiveFilters = computed(
   () =>
     queueQuery.value.status !== DEFAULT_QUEUE_QUERY.status ||
     queueQuery.value.search !== DEFAULT_QUEUE_QUERY.search,
+)
+
+const EMPTY_TAB_MESSAGES: Record<StatusFilter, string> = {
+  pending: 'No pending items.',
+  reviewed: 'No reviewed items.',
+  approved: 'No approved items.',
+  rejected: 'No rejected items.',
+  all: 'No items yet.',
+}
+
+// Without a search, an empty tab is a real state (e.g. the queue is cleared), not a filter miss.
+const emptyMessage = computed(() =>
+  queueQuery.value.search === ''
+    ? EMPTY_TAB_MESSAGES[queueQuery.value.status]
+    : 'No items match these filters.',
 )
 
 function clearFilters(): void {
@@ -108,7 +123,7 @@ function clearFilters(): void {
         <!-- Inside the table, so the headers and sort controls stay in place while searching. -->
         <template #empty>
           <div class="empty-state" role="status">
-            <p>No items match these filters.</p>
+            <p>{{ emptyMessage }}</p>
             <button v-if="hasActiveFilters" type="button" @click="clearFilters">
               Clear filters
             </button>
