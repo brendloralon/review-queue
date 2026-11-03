@@ -20,6 +20,8 @@ php artisan serve                             # http://localhost:8000
 
 Run the tests with `php artisan test`.
 
+Locally on SQLite, each API request is delayed by 500ms so the loading states are visible; set `SIMULATED_LATENCY_MS=0` in `backend/.env` to turn it off. It never applies outside the `local` environment or on a database server.
+
 ### Frontend (Vue)
 
 In a second terminal, with the backend running:

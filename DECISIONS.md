@@ -358,3 +358,10 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Alternatives considered: Changing only the Pending message (left the other tabs with the same misleading wording); a celebratory "All caught up" message (more tone than the app uses elsewhere).
 - Would change if: The empty Pending state needed a next action, such as a link to submit an item.
 - Category: frontend
+
+### Simulated latency in local development
+- Decision: A middleware on the API group pauses each request (default 500ms, `SIMULATED_LATENCY_MS`, 0 disables) only when the app runs in the `local` environment on SQLite. It uses Laravel's `Sleep` so tests fake it instead of waiting.
+- Why: Local SQLite answers in a few milliseconds, so the loading and refreshing states were never visible during development. Requiring both the local environment and SQLite means a production deployment or a real database server never pays for it, even if one of the two is misconfigured.
+- Alternatives considered: Checking only the database driver (a production deployment on SQLite would be slowed); a frontend-only delay (would also hide real API timing and couldn't tell which database is in use); browser DevTools network throttling (works, but every developer has to remember it).
+- Would change if: The app moved to a real database for local development too, where the delay would simply stop applying.
+- Category: tooling

@@ -43,6 +43,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Simulated API Latency
+    |--------------------------------------------------------------------------
+    |
+    | Pause added to each API request, in milliseconds, so loading states are
+    | visible during development. Applied only in the local environment on
+    | SQLite (see App\Http\Middleware\SimulateLatency). Set to 0 to disable.
+    |
+    */
+
+    'simulated_latency_ms' => (int) env('SIMULATED_LATENCY_MS', 500),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
     |
