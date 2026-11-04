@@ -72,6 +72,7 @@ All endpoints are under `/api/v1` and return Laravel API Resources, so the respo
 - **The review request accepts any known status** and the enum decides whether the move is allowed. The flow lives in one place, and "malformed" (422) stays distinct from "wrong state" (409).
 - **Bulk review reviews each item independently.** It calls the same `Item::review()` per item, so the rules and race protection are shared. A valid request returns 200 with the reviewed items and, for any that could not move (e.g. another reviewer got there first), the same message the single endpoint returns with its 409. Unknown or repeated ids are a 422 for the whole request.
 - **Concurrent reviews:** the update only applies if the status is still the one that was loaded, so a second reviewer gets a 409 instead of silently overwriting the first review.
+- **`reviewed` is a filter, not a status.** It covers approved and rejected, so the queue can split work to do from work done while `ItemStatus` stays the only list of statuses and transitions. The tabs are Pending and Reviewed for that split, Approved and Rejected to check one outcome, and All so one search finds an item whatever its state.
 - **List parameters are a whitelist** (`ItemQuery`). Unknown or invalid values fall back to defaults rather than returning 422, so an old or hand-edited queue URL still works. Sorts are named presets (`highest_risk`) rather than a column plus a direction, because each one carries its own tie-breakers and status orders by workflow position, not alphabetically; the UI maps each column header to its two presets. Every sort has tie-breakers for a stable order: equal risk or status lists the oldest submission first (it has waited longest), then `id`.
 
 ### Persistence choice
@@ -82,6 +83,7 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 
 - There is no authentication, so anyone can submit and review; submitters identify themselves with a required name.
 - Reviews are final: once approved or rejected, an item cannot be reviewed again.
+- I read the brief's "pending vs reviewed" as states from the reviewer's side, not stored statuses, so Reviewed groups approved and rejected items.
 - Whitespace-only input counts as empty: a blank note is stored as `null`, and blank required fields fail validation.
 - Stored moderation results are a record of submission time; they are not recalculated when rules change.
 - Items are short reports read in a drawer, so content is capped at 500 characters (title 120, name 80); the form shows a `count/limit` counter under the title and content.
