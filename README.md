@@ -86,7 +86,7 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 - I read the brief's "pending vs reviewed" as states from the reviewer's side, not stored statuses, so Reviewed groups approved and rejected items.
 - Whitespace-only input counts as empty: a blank note is stored as `null`, and blank required fields fail validation.
 - Stored moderation results are a record of submission time; they are not recalculated when rules change.
-- Items are short reports read in a drawer, so content is capped at 500 characters (title 120, name 80); the form shows a `count/limit` counter under the title and content.
+- Items are short reports read in a drawer, so content is capped at 500 characters (title 120, name 80, review note 1000); the form shows a `count/limit` counter under the title and content.
 
 ## 4. Tradeoffs
 
@@ -98,7 +98,7 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 - Failures the user can recover from: the queue shows skeleton rows while loading and a tab-specific message when empty; a failed load in the queue or drawer shows the error with **Try again**; invalid input is shown under each field; a review another reviewer beat you to shows the server's 409 message instead of a generic error; and server error details never reach the UI.
 - Triage first: the Pending tab opens with the riskiest items first (the oldest first among equal scores), because deciding what to look at next is the reviewer's main job there. Other tabs show newest first.
 - Clearing the obvious in one step: on the Pending tab a reviewer can tick several items and approve or reject them together with one optional note; items another reviewer decided in the meantime are listed with the reason instead of failing the whole batch.
-- Shareable, resilient queue views: status, search and sort live in the URL, invalid values fall back to defaults, and the item drawer is its own route (`/items/:id`), so it can be linked to and closed with Back.
+- Shareable, resilient queue views: status, search and sort live in the URL, invalid values fall back to defaults, default values are left out of the URL so the main queue is just `/` and each view has a single address, and the item drawer is its own route (`/items/:id`), so it can be linked to and closed with Back.
 - Moving through the queue: any row on any tab opens the drawer (reviewed items show the decision and note read-only), and a successful review closes it, since the item has usually just left the current tab. A failed review keeps it open to show why.
 - Accessibility with native elements: labelled inputs, a radio group for the status filter, sortable column headers announced with `aria-sort`, status shown as text not only colour, and a native modal `<dialog>` for the drawer (focus trap, Esc to close, focus returned to the row, or to the queue heading when a review removed that row).
 
