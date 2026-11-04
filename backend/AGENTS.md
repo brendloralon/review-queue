@@ -41,7 +41,7 @@ Project rules for the Laravel API. Shared contracts (API shape, error codes, one
 
 ## Documentation
 
-- Updating `README.md` and `DECISIONS.md` at the repository root is part of every relevant change; it does not need a separate request.
+- Updating `README.md` at the repository root is part of every relevant change; it does not need a separate request.
 
 === foundation rules ===
 
