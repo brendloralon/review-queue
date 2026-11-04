@@ -100,7 +100,7 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 - Clearing the obvious in one step: on the Pending tab a reviewer can tick several items and approve or reject them together with one optional note; items another reviewer decided in the meantime are listed with the reason instead of failing the whole batch.
 - Shareable, resilient queue views: status, search and sort live in the URL, invalid values fall back to defaults, and the item drawer is its own route (`/items/:id`), so it can be linked to and closed with Back.
 - Moving through the queue: any row on any tab opens the drawer (reviewed items show the decision and note read-only), and a successful review closes it, since the item has usually just left the current tab. A failed review keeps it open to show why.
-- Accessibility with native elements: labelled inputs, a radio group for the status filter, sortable column headers announced with `aria-sort`, status shown as text not only colour, and a native modal `<dialog>` for the drawer (focus trap, Esc to close, focus returned to the row).
+- Accessibility with native elements: labelled inputs, a radio group for the status filter, sortable column headers announced with `aria-sort`, status shown as text not only colour, and a native modal `<dialog>` for the drawer (focus trap, Esc to close, focus returned to the row, or to the queue heading when a review removed that row).
 
 ### What I intentionally didn't build
 

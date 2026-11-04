@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, useTemplateRef, watch } from 'vue'
 import { RouterView } from 'vue-router'
 import BulkReviewBar from '@/components/BulkReviewBar.vue'
 import ItemTable from '@/components/ItemTable.vue'
@@ -11,6 +11,7 @@ import { DEFAULT_QUEUE_QUERY, useQueueQuery, type StatusFilter } from '@/composa
 import type { ReviewPayload } from '@/types/item'
 import { sortableColumnsFor } from '@/utils/queueSort'
 
+const heading = useTemplateRef<HTMLHeadingElement>('heading')
 const { queueQuery, apiParams, updateQueueQuery } = useQueueQuery()
 const { items, isLoading, errorMessage, reload } = useItems(apiParams)
 
@@ -65,7 +66,8 @@ function clearFilters(): void {
 <template>
   <section aria-labelledby="queue-heading">
     <header class="page-header">
-      <h1 id="queue-heading">Review queue</h1>
+      <!-- tabindex="-1" lets the drawer return focus here when the row that opened it is gone. -->
+      <h1 id="queue-heading" ref="heading" tabindex="-1">Review queue</h1>
     </header>
 
     <QueueFilters :query="queueQuery" @change="updateQueueQuery" />
@@ -124,7 +126,7 @@ function clearFilters(): void {
       </ItemTable>
     </div>
 
-    <RouterView @reviewed="reload" />
+    <RouterView :fallback-focus-target="heading" @reviewed="reload" />
   </section>
 </template>
 

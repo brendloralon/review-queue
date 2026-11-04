@@ -8,7 +8,10 @@ import { useItem } from '@/composables/useItem'
 import type { ReviewPayload } from '@/types/item'
 import { formatDateTime, formatFlag } from '@/utils/format'
 
-const { id } = defineProps<{ id: number }>()
+const { id, fallbackFocusTarget = null } = defineProps<{
+  id: number
+  fallbackFocusTarget?: HTMLElement | null
+}>()
 const emit = defineEmits<{ reviewed: [] }>()
 
 const route = useRoute()
@@ -27,11 +30,12 @@ onMounted(() => {
   dialog.value?.showModal()
 })
 
+// After a review the queue reloads and the opening row is replaced (or leaves the tab), so
+// focus goes to a stable target instead of falling back to the top of the page.
 onBeforeUnmount(() => {
   dialog.value?.close()
-  if (previouslyFocused?.isConnected) {
-    previouslyFocused.focus()
-  }
+  const focusTarget = previouslyFocused?.isConnected ? previouslyFocused : fallbackFocusTarget
+  focusTarget?.focus()
 })
 
 const isClosing = ref(false)
