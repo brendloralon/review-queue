@@ -15,6 +15,7 @@ const STATUS_FILTER_LABELS: Record<StatusFilter, string> = {
 
 const SEARCH_DEBOUNCE_MS = 300
 
+const statusLabelId = useId()
 const searchId = useId()
 const searchText = ref(query.search)
 let searchTimer: ReturnType<typeof setTimeout> | undefined
@@ -82,32 +83,36 @@ onBeforeUnmount(() => {
 
 <template>
   <form class="filters" role="search" @submit.prevent>
-    <fieldset ref="statusFilter" class="status-filter">
-      <legend class="visually-hidden">Status</legend>
-      <span
-        class="status-indicator"
-        :class="{ 'status-indicator--animated': isIndicatorAnimated }"
-        :style="indicatorStyle"
-        aria-hidden="true"
-      ></span>
-      <label v-for="status in STATUS_FILTERS" :key="status" class="status-option">
-        <input
-          type="radio"
-          name="status"
-          :value="status"
-          :checked="query.status === status"
-          @change="emit('change', { status })"
-        />
-        <span>{{ STATUS_FILTER_LABELS[status] }}</span>
-      </label>
-    </fieldset>
+    <div class="field">
+      <!-- A <legend> is drawn on the fieldset border, so a separate label matches the search one. -->
+      <span :id="statusLabelId" class="field-label">Status</span>
+      <fieldset ref="statusFilter" class="status-filter" :aria-labelledby="statusLabelId">
+        <span
+          class="status-indicator"
+          :class="{ 'status-indicator--animated': isIndicatorAnimated }"
+          :style="indicatorStyle"
+          aria-hidden="true"
+        ></span>
+        <label v-for="status in STATUS_FILTERS" :key="status" class="status-option">
+          <input
+            type="radio"
+            name="status"
+            :value="status"
+            :checked="query.status === status"
+            @change="emit('change', { status })"
+          />
+          <span>{{ STATUS_FILTER_LABELS[status] }}</span>
+        </label>
+      </fieldset>
+    </div>
 
     <div class="field">
-      <label :for="searchId">Search</label>
+      <label :for="searchId" class="field-label">Search</label>
       <input
         :id="searchId"
         v-model="searchText"
         type="search"
+        class="search-input"
         placeholder="Title, text or submitter"
         maxlength="100"
         @input="onSearchInput"
@@ -197,12 +202,12 @@ onBeforeUnmount(() => {
   gap: 0.25rem;
 }
 
-.field label {
+.field-label {
   font-size: var(--font-size-small);
   color: var(--color-text-muted);
 }
 
-.field input {
+.search-input {
   min-width: 16rem;
 }
 </style>
