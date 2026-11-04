@@ -84,6 +84,7 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 - Reviews are final: once approved or rejected, an item cannot be reviewed again.
 - Whitespace-only input counts as empty: a blank note is stored as `null`, and blank required fields fail validation.
 - Stored moderation results are a record of submission time; they are not recalculated when rules change.
+- Items are short reports read in a drawer, so content is capped at 500 characters (title 120, name 80); the form shows a `count/limit` counter under the title and content.
 
 ## 4. Tradeoffs
 
@@ -92,6 +93,7 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 - Making the likely changes local: a new heuristic is one class plus one line, the review flow is one enum method, and a new filter or sort is one whitelist entry in the API plus its control in the UI.
 - Clear, explicit code over abstractions, and a small number of meaningful tests.
 - A frontend that stays honest to the server: after a review it shows the server's answer and refetches rather than guessing, and thresholds and flag rules live only in the backend, so tuning them needs no UI change.
+- Failures the user can recover from: the queue shows skeleton rows while loading and a tab-specific message when empty; a failed load in the queue or drawer shows the error with **Try again**; invalid input is shown under each field; a review another reviewer beat you to shows the server's 409 message instead of a generic error; and server error details never reach the UI.
 - Triage first: the Pending tab opens with the riskiest items first (the oldest first among equal scores), because deciding what to look at next is the reviewer's main job there. Other tabs show newest first.
 - Clearing the obvious in one step: on the Pending tab a reviewer can tick several items and approve or reject them together with one optional note; items another reviewer decided in the meantime are listed with the reason instead of failing the whole batch.
 - Shareable, resilient queue views: status, search and sort live in the URL, invalid values fall back to defaults, and the item drawer is its own route (`/items/:id`), so it can be linked to and closed with Back.
