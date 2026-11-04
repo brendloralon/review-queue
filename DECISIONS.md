@@ -387,11 +387,11 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Would change if: The app started rendering rich text or HTML, which would need an allow-list sanitizer at render time, or names with digits had to be supported.
 - Category: api
 
-### Character counter on the content field
-- Decision: The submit form shows "count/limit" (e.g. "120/500") under the content field only, linked to it with `aria-describedby` and not announced on every keystroke.
-- Why: The content limit is the one a user is most likely to hit while writing; title and name are short. It counts like the browser's `maxlength` (an emoji counts as 2), because that is what actually stops typing; the API counts an emoji as 1, so it never rejects what the counter allowed.
-- Alternatives considered: counting like the API (the counter would show characters left after typing is blocked); counters on every field (noise for short fields); a live region (announces every keystroke).
-- Would change if: users hit the title limit, or the limit needs to match the API exactly for emoji-heavy text.
+### Character counters on the title and content fields
+- Decision: The submit form shows "count/limit" (e.g. "120/500") under the title and content fields, linked to each with `aria-describedby` and not announced on every keystroke.
+- Why: These are the fields a user writes freely and can run into the limit; a name is short and needs no counter. It counts like the browser's `maxlength` (an emoji counts as 2), because that is what actually stops typing; the API counts an emoji as 1, so it never rejects what the counter allowed.
+- Alternatives considered: counting like the API (the counter would show characters left after typing is blocked); a counter on the name too (noise for a field that short); a live region (announces every keystroke).
+- Would change if: the limit needs to match the API exactly for emoji-heavy text.
 - Category: frontend
 
 ### Item content limited to 500 characters

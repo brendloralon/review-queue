@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, useId } from 'vue'
+import { reactive, useId } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSubmitItem } from '@/composables/useSubmitItem'
 import type { NewItem } from '@/types/item'
@@ -16,17 +16,26 @@ const fieldIds: Record<keyof NewItem, string> = {
   submitter_name: useId(),
 }
 
-const bodyCounterId = `${fieldIds.body}-counter`
-// Counts like maxlength (UTF-16 units, an emoji is 2), since that is what stops typing.
-// The API counts an emoji as 1, so it never rejects what the counter allowed.
-const bodyLength = computed(() => form.body.length)
-
 function errorFor(field: keyof NewItem): string | undefined {
   return fieldErrors.value[field]?.[0]
 }
 
 function errorId(field: keyof NewItem): string {
   return `${fieldIds[field]}-error`
+}
+
+function counterId(field: keyof NewItem): string {
+  return `${fieldIds[field]}-counter`
+}
+
+function counterDescribedBy(field: keyof NewItem): string {
+  return errorFor(field) ? `${errorId(field)} ${counterId(field)}` : counterId(field)
+}
+
+// Counts like maxlength (UTF-16 units, an emoji is 2), since that is what stops typing.
+// The API counts an emoji as 1, so it never rejects what the counter allowed.
+function characterCounter(field: keyof NewItem): string {
+  return `${form[field].length}/${MAX_LENGTHS[field]}`
 }
 
 async function onSubmit(): Promise<void> {
@@ -54,8 +63,9 @@ async function onSubmit(): Promise<void> {
           required
           :maxlength="MAX_LENGTHS.title"
           :aria-invalid="errorFor('title') ? 'true' : undefined"
-          :aria-describedby="errorFor('title') ? errorId('title') : undefined"
+          :aria-describedby="counterDescribedBy('title')"
         />
+        <p :id="counterId('title')" class="character-counter">{{ characterCounter('title') }}</p>
         <p v-if="errorFor('title')" :id="errorId('title')" class="field-error">
           {{ errorFor('title') }}
         </p>
@@ -70,11 +80,9 @@ async function onSubmit(): Promise<void> {
           required
           :maxlength="MAX_LENGTHS.body"
           :aria-invalid="errorFor('body') ? 'true' : undefined"
-          :aria-describedby="
-            errorFor('body') ? `${errorId('body')} ${bodyCounterId}` : bodyCounterId
-          "
+          :aria-describedby="counterDescribedBy('body')"
         ></textarea>
-        <p :id="bodyCounterId" class="character-counter">{{ bodyLength }}/{{ MAX_LENGTHS.body }}</p>
+        <p :id="counterId('body')" class="character-counter">{{ characterCounter('body') }}</p>
         <p v-if="errorFor('body')" :id="errorId('body')" class="field-error">
           {{ errorFor('body') }}
         </p>
