@@ -42,8 +42,8 @@ async function onSubmit(): Promise<void> {
   const item = await submit({ ...form })
 
   if (item) {
-    // Open the new item over the queue so the stored moderation result is visible right away.
-    await router.push({ name: 'item', params: { id: item.id } })
+    // Back to the queue rather than the new item: submitting is done, and newest first puts it on top.
+    await router.push({ name: 'queue' })
   }
 }
 </script>
