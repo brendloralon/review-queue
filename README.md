@@ -97,6 +97,7 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 - Triage first: the Pending tab opens with the riskiest items first (the oldest first among equal scores), because deciding what to look at next is the reviewer's main job there. Other tabs show newest first.
 - Clearing the obvious in one step: on the Pending tab a reviewer can tick several items and approve or reject them together with one optional note; items another reviewer decided in the meantime are listed with the reason instead of failing the whole batch.
 - Shareable, resilient queue views: status, search and sort live in the URL, invalid values fall back to defaults, and the item drawer is its own route (`/items/:id`), so it can be linked to and closed with Back.
+- Moving through the queue: any row on any tab opens the drawer (reviewed items show the decision and note read-only), and a successful review closes it, since the item has usually just left the current tab. A failed review keeps it open to show why.
 - Accessibility with native elements: labelled inputs, a radio group for the status filter, sortable column headers announced with `aria-sort`, status shown as text not only colour, and a native modal `<dialog>` for the drawer (focus trap, Esc to close, focus returned to the row).
 
 ### What I intentionally didn't build
@@ -116,7 +117,7 @@ I chose SQLite: it needs no setup to run the project, still gives real SQL with 
 - **Review flow (unit):** every status transition pair in `ItemStatus`.
 - **API (feature, in-memory SQLite):** submitting (moderation stored, validation, rejected control, invisible and name characters, HTML stored as plain text, ignored review fields), showing (404), listing (each filter, search, sort, tie-breaker, invalid and unknown params), reviewing (approve, reject with note, blank note, 409 on double review, 409 on invalid transition, 422, 404, and a simulated race between two reviewers) and bulk review (shared note, mixed states reported per item, invalid decision, unknown or repeated ids, size limits).
 - **Seeder:** sample data triggers every rule, suggested action and status, so the demo stays meaningful as rules change.
-- **Frontend (Vitest):** the API client's error handling (409 and 422 messages, hidden 500 details, network failures, aborted requests), the queue's URL parsing (defaults, invalid values, round-trip), the per-tab sort rules (default sort, which columns are sortable, header click order), bulk selection (select all, items dropping out of view), the bulk result summary, and the submit form's validation, which mirrors the API's. This is the logic most likely to break silently.
+- **Frontend (Vitest):** the API client's error handling (409 and 422 messages, hidden 500 details, network failures, aborted requests), the queue's URL parsing (defaults, invalid values, round-trip), whether a single review succeeded (which decides if the drawer closes), the per-tab sort rules (default sort, which columns are sortable, header click order), bulk selection (select all, items dropping out of view), the bulk result summary, and the submit form's validation, which mirrors the API's. This is the logic most likely to break silently.
 
 ### What I didn't test and why
 

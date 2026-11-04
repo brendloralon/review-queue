@@ -10,7 +10,7 @@ export interface UseItem {
   isReviewing: Ref<boolean>
   reviewErrorMessage: Ref<string | null>
   reload: () => Promise<void>
-  review: (payload: ReviewPayload) => Promise<void>
+  review: (payload: ReviewPayload) => Promise<boolean>
 }
 
 export function useItem(id: MaybeRefOrGetter<number>): UseItem {
@@ -42,12 +42,13 @@ export function useItem(id: MaybeRefOrGetter<number>): UseItem {
     }
   }
 
-  async function review(payload: ReviewPayload): Promise<void> {
+  async function review(payload: ReviewPayload): Promise<boolean> {
     isReviewing.value = true
     reviewErrorMessage.value = null
 
     try {
       item.value = await reviewItem(toValue(id), payload)
+      return true
     } catch (error) {
       reviewErrorMessage.value = messageFrom(error, 'Could not save the review.')
 
@@ -55,6 +56,7 @@ export function useItem(id: MaybeRefOrGetter<number>): UseItem {
       if (error instanceof ApiError && error.status === 409) {
         await reload()
       }
+      return false
     } finally {
       isReviewing.value = false
     }

@@ -61,9 +61,15 @@ function onBackdropClick(event: MouseEvent): void {
   }
 }
 
+// A decided item leaves the reviewer's current tab, so the drawer closes on success and the
+// queue refreshes. On failure it stays open so the error (or the other reviewer's decision) shows.
 async function onReview(payload: ReviewPayload): Promise<void> {
-  await review(payload)
+  const isReviewed = await review(payload)
   emit('reviewed')
+
+  if (isReviewed) {
+    await close()
+  }
 }
 </script>
 
