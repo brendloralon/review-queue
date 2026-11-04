@@ -8,17 +8,18 @@ import {
 } from '../useQueueQuery'
 
 describe('parseQueueQuery', () => {
-  it('uses defaults for an empty query: pending items in triage order', () => {
-    expect(parseQueueQuery({})).toEqual({ status: 'pending', search: '', sort: 'highest_risk' })
+  it('uses defaults for an empty query: pending items, newest first', () => {
+    expect(parseQueueQuery({})).toEqual({ status: 'pending', search: '', sort: 'newest' })
   })
 
-  it("falls back to the tab's default sort when no sort is given", () => {
+  it('falls back to the default sort on every tab when no sort is given', () => {
     expect(parseQueueQuery({ status: 'approved' }).sort).toBe('newest')
+    expect(parseQueueQuery({ status: 'pending' }).sort).toBe('newest')
   })
 
-  it("replaces a status sort on a single-status tab with that tab's default", () => {
+  it('replaces a status sort on a single-status tab with the default', () => {
     expect(parseQueueQuery({ status: 'approved', sort: 'pending_first' }).sort).toBe('newest')
-    expect(parseQueueQuery({ sort: 'pending_last' }).sort).toBe('highest_risk')
+    expect(parseQueueQuery({ sort: 'pending_last' }).sort).toBe('newest')
     expect(parseQueueQuery({ status: 'all', sort: 'pending_last' }).sort).toBe('pending_last')
   })
 
@@ -46,7 +47,7 @@ describe('toRouteQuery', () => {
     expect(toRouteQuery(DEFAULT_QUEUE_QUERY)).toEqual({})
   })
 
-  it("omits the sort when it is the tab's own default", () => {
+  it('omits the sort when it is the default', () => {
     expect(toRouteQuery({ status: 'all', search: '', sort: 'newest' })).toEqual({ status: 'all' })
     expect(toRouteQuery({ status: 'all', search: '', sort: 'highest_risk' })).toEqual({
       status: 'all',
@@ -64,11 +65,11 @@ describe('toRouteQuery', () => {
 describe('applyQueueChanges', () => {
   const sortedByAge = { status: 'all', search: 'video', sort: 'oldest' } as const
 
-  it("switching tabs switches to the new tab's default sort", () => {
+  it('switching tabs resets the sort to the default', () => {
     expect(applyQueueChanges(sortedByAge, { status: 'pending' })).toEqual({
       status: 'pending',
       search: 'video',
-      sort: 'highest_risk',
+      sort: 'newest',
     })
   })
 

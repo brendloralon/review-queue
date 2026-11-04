@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  defaultSortFor,
-  isSortAvailable,
-  nextSort,
-  sortableColumnsFor,
-  sortDirectionOf,
-} from '../queueSort'
+import { isSortAvailable, nextSort, sortableColumnsFor, sortDirectionOf } from '../queueSort'
 
 describe('sortDirectionOf', () => {
   it('reports the direction of the active column', () => {
@@ -48,13 +42,5 @@ describe('sortableColumnsFor', () => {
     expect(isSortAvailable('pending_first', 'all')).toBe(true)
     expect(isSortAvailable('pending_first', 'rejected')).toBe(false)
     expect(isSortAvailable('oldest', 'rejected')).toBe(true)
-  })
-})
-
-describe('defaultSortFor', () => {
-  it('triages pending items by risk and shows other tabs newest first', () => {
-    expect(defaultSortFor('pending')).toBe('highest_risk')
-    expect(defaultSortFor('reviewed')).toBe('newest')
-    expect(defaultSortFor('all')).toBe('newest')
   })
 })

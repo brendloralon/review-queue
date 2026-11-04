@@ -34,14 +34,6 @@ export function isSortAvailable(sort: ItemSort, status: StatusFilter): boolean {
   return sortableColumnsFor(status).some((column) => sortDirectionOf(column, sort) !== undefined)
 }
 
-/**
- * The default follows the reviewer's job on each tab. Pending is triage: riskiest first, and the
- * API lists the oldest first among equal scores. Other tabs are history: newest first.
- */
-export function defaultSortFor(status: StatusFilter): ItemSort {
-  return status === 'pending' ? 'highest_risk' : 'newest'
-}
-
 /** The column's current direction, or undefined when the queue is sorted by another column. */
 export function sortDirectionOf(
   column: SortableColumn,

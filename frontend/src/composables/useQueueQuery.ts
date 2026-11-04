@@ -1,7 +1,7 @@
 import { computed, type ComputedRef } from 'vue'
 import { useRoute, useRouter, type LocationQuery, type LocationQueryRaw } from 'vue-router'
 import type { ItemListParams, ItemSort, ItemStatusFilter } from '@/types/item'
-import { defaultSortFor, isSortAvailable } from '@/utils/queueSort'
+import { isSortAvailable } from '@/utils/queueSort'
 
 export const STATUS_FILTERS = ['pending', 'reviewed', 'approved', 'rejected', 'all'] as const
 export type StatusFilter = (typeof STATUS_FILTERS)[number]
@@ -21,11 +21,12 @@ export interface QueueQuery {
   sort: ItemSort
 }
 
-// A reviewer's queue starts with what still needs a decision, in triage order.
+// A reviewer's queue starts with what still needs a decision. Every tab defaults to newest first,
+// the same default as the API, so the order is predictable wherever the reviewer is.
 export const DEFAULT_QUEUE_QUERY: QueueQuery = {
   status: 'pending',
   search: '',
-  sort: defaultSortFor('pending'),
+  sort: 'newest',
 }
 
 export interface UseQueueQuery {
@@ -53,13 +54,13 @@ export function useQueueQuery(): UseQueueQuery {
   return { queueQuery, apiParams, updateQueueQuery }
 }
 
-/** Switching tabs switches to that tab's default sort, since each tab serves a different job. */
+/** Switching tabs resets the sort, so a sort chosen for one tab doesn't silently carry over. */
 export function applyQueueChanges(current: QueueQuery, changes: Partial<QueueQuery>): QueueQuery {
   const next = { ...current, ...changes }
   const switchedTab = changes.status !== undefined && changes.status !== current.status
 
   if (switchedTab && changes.sort === undefined) {
-    next.sort = defaultSortFor(next.status)
+    next.sort = DEFAULT_QUEUE_QUERY.sort
   }
   return next
 }
@@ -73,7 +74,7 @@ export function parseQueueQuery(query: LocationQuery): QueueQuery {
   return {
     status,
     search: firstValue(query.search) ?? DEFAULT_QUEUE_QUERY.search,
-    sort: sortIsValid ? rawSort : defaultSortFor(status),
+    sort: sortIsValid ? rawSort : DEFAULT_QUEUE_QUERY.sort,
   }
 }
 
@@ -87,7 +88,7 @@ export function toRouteQuery(queueQuery: QueueQuery): LocationQueryRaw {
   if (queueQuery.search !== DEFAULT_QUEUE_QUERY.search) {
     routeQuery.search = queueQuery.search
   }
-  if (queueQuery.sort !== defaultSortFor(queueQuery.status)) {
+  if (queueQuery.sort !== DEFAULT_QUEUE_QUERY.sort) {
     routeQuery.sort = queueQuery.sort
   }
 
