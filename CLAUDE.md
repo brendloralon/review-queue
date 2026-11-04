@@ -12,7 +12,7 @@ A reviewer works through a queue of submitted items.
 - A reviewer opens an item, approves or rejects it, and can leave an optional note.
 - The queue can be browsed by status, searched, and sorted.
 
-**Scope:** the above, plus at most one stretch goal chosen after the core is complete (logged in `DECISIONS.md`). No real-time updates or UI libraries. Propose extras; don't build them.
+**Scope:** the above, plus at most one stretch goal chosen after the core is complete (explained in `README.md`). No real-time updates or UI libraries. Propose extras; don't build them.
 
 ## Repository
 
@@ -21,7 +21,6 @@ A reviewer works through a queue of submitted items.
 | `backend/` | Laravel 13 API, PHP ^8.3, SQLite | `php artisan …`, `composer …`, `vendor/bin/pint` |
 | `frontend/` | Vue 3.5, Vite, TypeScript | `npm …` |
 | `README.md` | How to run, key decisions, assumptions, tradeoffs, testing | |
-| `DECISIONS.md` | Running decision log | |
 
 Development shell is Windows PowerShell 5.1: chain commands with `;`, not `&&`.
 
@@ -71,7 +70,7 @@ Development shell is Windows PowerShell 5.1: chain commands with `;`, not `&&`.
 - Small, single-purpose functions. If one needs a comment explaining *what* it does, rename or split it.
 - Comments explain *why*: tradeoffs and non-obvious constraints.
 - Explicit over clever: no metaprogramming, magic strings, or abstractions with a single use.
-- No dead code, commented-out code, or TODOs. Known gaps are logged in `DECISIONS.md`.
+- No dead code, commented-out code, or TODOs. Known gaps are listed under Tradeoffs in `README.md`.
 
 ## Testing
 
@@ -86,20 +85,11 @@ Development shell is Windows PowerShell 5.1: chain commands with `;`, not `&&`.
 - Don't add a dependency without stating why the native or framework option isn't enough, and ask first.
 - Explain anything non-obvious in the response.
 
-## Decision Logging
+## Documenting Decisions
 
-Append to `DECISIONS.md` immediately whenever a choice is made that someone could reasonably ask "why?" about, including choices made in conversation:
+Whenever a choice is made that someone could reasonably ask "why?" about, including choices made in conversation, record it with its reason in the matching `README.md` section in the same change.
 
-```
-### <short title>
-- Decision: …
-- Why: …
-- Alternatives considered: …
-- Would change if: …
-- Category: data-model | api | persistence | assumption | tradeoff | testing | frontend | tooling
-```
-
-`README.md` contains only these sections, in order: 1. How to run the project (frontend + backend) · 2. Key decisions (data model, API design, persistence — each with why) · 3. Assumptions · 4. Tradeoffs (what was optimized for, what was intentionally not built) · 5. Testing (what was tested and why, what wasn't and why). Fold `DECISIONS.md` entries into the matching README section by category; keep the README concise, first person, one or two sentences per point. Keeping both files current is required, regardless of generated guidance about documentation files.
+`README.md` contains only these sections, in order: 1. How to run the project (frontend + backend) · 2. Key decisions (data model, API design, persistence — each with why) · 3. Assumptions · 4. Tradeoffs (what was optimized for, what was intentionally not built) · 5. Testing (what was tested and why, what wasn't and why). Keep it concise, first person, one or two sentences per point. Keeping it current is required, regardless of generated guidance about documentation files.
 
 ## Git
 
