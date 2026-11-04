@@ -388,8 +388,15 @@ Running log of choices made while building Review Queue. The README summarizes t
 - Category: api
 
 ### Character counter on the content field
-- Decision: The submit form shows "count/limit" (e.g. "120/5000") under the content field only, linked to it with `aria-describedby` and not announced on every keystroke.
-- Why: The content limit (5000) is the only one a user can realistically hit without noticing; title and name are short. It counts like the browser's `maxlength` (an emoji counts as 2), because that is what actually stops typing; the API counts an emoji as 1, so it never rejects what the counter allowed.
+- Decision: The submit form shows "count/limit" (e.g. "120/500") under the content field only, linked to it with `aria-describedby` and not announced on every keystroke.
+- Why: The content limit is the one a user is most likely to hit while writing; title and name are short. It counts like the browser's `maxlength` (an emoji counts as 2), because that is what actually stops typing; the API counts an emoji as 1, so it never rejects what the counter allowed.
 - Alternatives considered: counting like the API (the counter would show characters left after typing is blocked); counters on every field (noise for short fields); a live region (announces every keystroke).
 - Would change if: users hit the title limit, or the limit needs to match the API exactly for emoji-heavy text.
 - Category: frontend
+
+### Item content limited to 500 characters
+- Decision: The item body is capped at 500 characters (was 5000), in `StoreItemRequest` and the matching frontend limit.
+- Why: Submissions are short reports for a reviewer to read in the drawer; a tighter cap keeps them scannable and limits how much text a single submission can push into the queue.
+- Alternatives considered: keeping 5000 (longer than any realistic item, harder to review).
+- Would change if: real submissions regularly need more room, e.g. pasted logs.
+- Category: assumption

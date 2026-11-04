@@ -8,7 +8,7 @@ import type { NewItem } from '@/types/item'
 
 export const NEW_ITEM_MAX_LENGTHS: Record<keyof NewItem, number> = {
   title: 120,
-  body: 5000,
+  body: 500,
   submitter_name: 80,
 }
 

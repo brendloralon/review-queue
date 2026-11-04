@@ -59,7 +59,7 @@ class StoreItemTest extends TestCase
     {
         $this->postJson('/api/v1/items', [
             'title' => Str::repeat('a', 121),
-            'body' => Str::repeat('a', 5001),
+            'body' => Str::repeat('a', 501),
             'submitter_name' => Str::repeat('a', 81),
         ])
             ->assertUnprocessable()

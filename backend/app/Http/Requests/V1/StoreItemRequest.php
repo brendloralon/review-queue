@@ -23,7 +23,7 @@ class StoreItemRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:120', PlainText::singleLine()],
-            'body' => ['required', 'string', 'max:5000', PlainText::multiline()],
+            'body' => ['required', 'string', 'max:500', PlainText::multiline()],
             'submitter_name' => ['required', 'string', 'max:80', 'regex:'.self::PERSON_NAME_PATTERN],
         ];
     }
